@@ -1,0 +1,30 @@
+{
+  "name": "local-agent-office",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "npm run build && node --import tsx src/main.ts",
+    "build": "tsc && vite build",
+    "start": "node dist/main.js",
+    "check": "tsc --noEmit && tsc -p web/tsconfig.json",
+    "test": "node --import tsx --test --experimental-test-isolation=none tests/*.test.ts",
+    "smoke": "node --import tsx scripts/smoke.ts",
+    "service": "node scripts/service.mjs",
+    "claw": "node scripts/claw-empire.mjs",
+    "office": "node scripts/office.mjs"
+  },
+  "dependencies": {
+    "better-sqlite3": "11.10.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "7.6.13",
+    "@types/node": "22.20.1",
+    "tsx": "4.23.5",
+    "typescript": "5.9.3",
+    "vite": "6.4.1"
+  }
+}

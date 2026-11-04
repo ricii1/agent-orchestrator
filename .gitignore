@@ -1,0 +1,36 @@
+# Dependencies and generated output
+node_modules/
+dist/
+public/
+apps/
+
+# Private task state, databases, logs, and process artifacts
+.data/
+*.db*
+*.sqlite*
+*.log
+*.pid
+*.sock
+*.socket
+
+# Local environment and credential directories
+.env
+.env.*
+!.env.example
+.aws/
+.codex/
+.agents/
+.claude/
+
+# Generated installation snapshots and laptop-specific evidence
+/deploy/agent-office.service
+/deploy/evidence.txt
+/deploy/system-install-result.txt
+/deploy/test-results.txt
+/docs/LOCAL-SERVICE.md
+
+# Host/editor artifacts
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
