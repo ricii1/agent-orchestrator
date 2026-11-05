@@ -1,0 +1,59 @@
+{
+  "browser": "Google Chrome headless via CDP",
+  "environment": "isolated /tmp Vite build + local fake API",
+  "checks": {
+    "initial": {
+      "cta": "⚠ Perlu ditinjau · 2",
+      "attention": 2
+    },
+    "staleConflict": {
+      "toast": "Tugas berubah sejak ditampilkan. Versi terbaru sudah dimuat; periksa lagi sebelum memilih.",
+      "cta": "⚠ Perlu ditinjau · 2",
+      "focus": "review-ignore-failed-a",
+      "dismissals": "⚠ Perlu ditinjau · 2"
+    },
+    "ignored": {
+      "cta": "⚠ Perlu ditinjau · 1",
+      "attention": 1,
+      "metadata": "⚠ Perlu ditinjau · 1"
+    },
+    "ignoredTab": {
+      "title": "Riwayat pekerjaan",
+      "tab": [
+        "Semua riwayat",
+        "Perlu ditinjau (1)",
+        "Diabaikan (1)"
+      ]
+    },
+    "ignoredRows": [
+      "failed-a"
+    ],
+    "afterReload": {
+      "cta": "⚠ Perlu ditinjau · 1",
+      "attention": 1
+    },
+    "restored": {
+      "cta": "⚠ Perlu ditinjau · 2",
+      "attention": 2
+    },
+    "focusAfterReflow": {
+      "focus": "review",
+      "reviewTab": "Perlu ditinjau (1)",
+      "cta": "⚠ Perlu ditinjau · 1"
+    },
+    "mobile": {
+      "width": 320,
+      "scrollWidth": 305,
+      "reviewCTA": "⚠ Perlu ditinjau · 2"
+    },
+    "apiCalls": [
+      "POST /api/tasks/failed-a/review-dismissal true failed 2026-11-05T00:00:05Z",
+      "POST /api/tasks/failed-a/review-dismissal true failed 2026-11-05T00:00:20.000Z",
+      "POST /api/tasks/failed-a/review-dismissal false failed 2026-11-05T00:00:20.000Z",
+      "POST /api/tasks/cut-a/review-dismissal true interrupted 2026-11-05T00:00:04Z",
+      "POST /api/tasks/cut-a/review-dismissal false interrupted 2026-11-05T00:00:04Z"
+    ],
+    "noResume": true,
+    "taskStateUnchanged": true
+  }
+}

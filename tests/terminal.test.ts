@@ -23,3 +23,23 @@ test('PTY supports interactive input, hidden input, resize, interrupt, reconnect
   terminals.close(id);await until(()=>terminals.read(id,0).exitCode!==null);
  }finally{terminals.shutdown();if(old===undefined)delete process.env.SHELL;else process.env.SHELL=old;}
 });
+
+test('PTY advertises color independently of the daemon environment',async()=>{
+ const previous={shell:process.env.SHELL,noColor:process.env.NO_COLOR,colorTerm:process.env.COLORTERM};
+ process.env.SHELL='/bin/bash';process.env.NO_COLOR='1';process.env.COLORTERM='';
+ const terminals=new Terminals(()=>['/tmp']);
+ try{
+  const {id}=await terminals.open('/tmp');
+  terminals.input(id,"printf 'COLOR_ENV_%s_%s_%s\\n' \"$TERM\" \"$COLORTERM\" \"${NO_COLOR-unset}\"\n");
+  let output='';
+  for(let n=0;n<150;n++){
+   output=terminals.read(id,0).chunks.map(c=>Buffer.from(c.data,'base64').toString()).join('');
+   if(output.includes('COLOR_ENV_xterm-256color_truecolor_unset'))break;
+   await delay();
+  }
+  assert.match(output,/COLOR_ENV_xterm-256color_truecolor_unset/);
+ }finally{
+  terminals.shutdown();
+  for(const [name,value] of Object.entries({SHELL:previous.shell,NO_COLOR:previous.noColor,COLORTERM:previous.colorTerm}))if(value===undefined)delete process.env[name];else process.env[name]=value;
+ }
+});

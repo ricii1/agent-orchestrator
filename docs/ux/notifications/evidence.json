@@ -1,0 +1,83 @@
+{
+  "fixture": "temporary SQLite database/workspace, fake engine adapter and injected sender; no notify-send invocation",
+  "checks": [
+    {
+      "name": "default off and startup completed task produces no sender calls",
+      "status": "pass"
+    },
+    {
+      "name": "tab focus clears the temporary title badge",
+      "status": "pass"
+    },
+    {
+      "name": "approval click opens correct task context and reflects latest resolved state",
+      "status": "pass"
+    },
+    {
+      "name": "SSE replay/poll observations do not duplicate the daemon sender",
+      "status": "pass"
+    },
+    {
+      "name": "opt-out is global across tabs and suppresses pending events",
+      "status": "pass"
+    },
+    {
+      "name": "decision-kind filter is honored",
+      "status": "pass"
+    },
+    {
+      "name": "complete-kind filter suppresses a fast created-to-completed task",
+      "status": "pass"
+    },
+    {
+      "name": "new completed task and later completed retry each notify once, including between-poll state version",
+      "status": "pass"
+    },
+    {
+      "name": "test button sends only a static fake desktop payload",
+      "status": "pass"
+    },
+    {
+      "name": "sender failure is surfaced and native capability turns unavailable; client fallback toast appears",
+      "status": "pass"
+    },
+    {
+      "name": "HTTP fallback and denied mocked permission never invoke Notification",
+      "status": "pass"
+    },
+    {
+      "name": "secure granted branch uses mocked Notification only and click opens child in parent workspace",
+      "status": "pass"
+    },
+    {
+      "name": "host and origin guards reject foreign notification configuration",
+      "status": "pass"
+    },
+    {
+      "name": "reload persists opt-in and does not replay historical completion notifications",
+      "status": "pass"
+    }
+  ],
+  "senderCalls": [
+    "Pertanyaan baru",
+    "Tugas selesai",
+    "Tugas selesai",
+    "Uji notifikasi",
+    "Pertanyaan baru"
+  ],
+  "browserMockCalls": [
+    [
+      {
+        "title": "Pertanyaan baru",
+        "tag": "approval:approval-1793862039623-0.824401733704268"
+      }
+    ],
+    []
+  ],
+  "notificationClick": {
+    "title": "Pertanyaan baru",
+    "body": "registered-workspace · Worker QA",
+    "tag": "approval:approval-1793862039623-0.824401733704268"
+  },
+  "limitations": "notify-send desktop notifications do not support a reliable click action; browser Notification click is separately tested with a mock. Secure-context branch is simulated in the browser fixture. Screenshot: settings.png."
+}

@@ -6,6 +6,7 @@ export interface Task {
   sessionId: string | null; status: Status; result: string; error: string;
   scheduleId: string | null; createdAt: string; updatedAt: string;
 }
+export interface ReviewDismissal { taskId: string; status: 'failed' | 'interrupted'; updatedAt: string; }
 export type PermissionMode='manual'|'auto'|'full';
 export interface WorkspaceAgents { coordinatorProvider: Provider; workerProvider: Provider; claudeModel: string; codexModel: string; }
 export function workspaceAgents(settings: Settings, workspace: string): WorkspaceAgents {

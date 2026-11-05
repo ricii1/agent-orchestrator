@@ -2,7 +2,7 @@ import Database from 'better-sqlite3';
 import { randomUUID } from 'node:crypto';
 import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
-import type { Approval, Event, Schedule, Settings, Task } from './types.js';
+import type { Approval, Event, ReviewDismissal, Schedule, Settings, Task } from './types.js';
 
 export class Store {
   db: Database.Database;
@@ -17,6 +17,7 @@ export class Store {
       CREATE TABLE IF NOT EXISTS schedules (id TEXT PRIMARY KEY, body TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS settings (id INTEGER PRIMARY KEY CHECK(id=1), body TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS inbox (id INTEGER PRIMARY KEY AUTOINCREMENT, taskId TEXT NOT NULL, text TEXT NOT NULL, delivered INTEGER NOT NULL DEFAULT 0);
+      CREATE TABLE IF NOT EXISTS review_dismissals (taskId TEXT NOT NULL, status TEXT NOT NULL, updatedAt TEXT NOT NULL, PRIMARY KEY(taskId,status,updatedAt));
       CREATE INDEX IF NOT EXISTS events_task ON events(taskId, id);
     `);
   }
@@ -32,7 +33,25 @@ export class Store {
     if (!row) throw new Error('Task not found');
     return JSON.parse(row.body);
   }
-  saveTask(task: Task) { task.updatedAt = new Date().toISOString(); this.db.prepare('INSERT OR REPLACE INTO tasks VALUES (?, ?)').run(task.id, JSON.stringify(task)); return task; }
+  saveTask(task: Task) {
+    const previous=this.db.prepare('SELECT body FROM tasks WHERE id=?').get(task.id) as {body:string}|undefined;
+    const now=Date.now(),last=previous?Date.parse((JSON.parse(previous.body) as Task).updatedAt):0;
+    task.updatedAt=new Date(Math.max(now,last+1)).toISOString();
+    this.db.prepare('INSERT OR REPLACE INTO tasks VALUES (?, ?)').run(task.id, JSON.stringify(task)); return task;
+  }
+  reviewDismissals(): ReviewDismissal[] { return this.db.prepare('SELECT taskId,status,updatedAt FROM review_dismissals').all() as ReviewDismissal[]; }
+  setReviewDismissal(taskId: string, ignored: boolean, expected: Pick<ReviewDismissal,'status'|'updatedAt'>) {
+    return this.db.transaction(() => {
+      const row=this.db.prepare('SELECT body FROM tasks WHERE id=?').get(taskId) as {body:string}|undefined;
+      if(!row)throw new Error('Task not found');
+      const task=JSON.parse(row.body) as Task;
+      if(task.status!==expected.status||task.updatedAt!==expected.updatedAt)return false;
+      if (!task.parentId || (task.status !== 'failed' && task.status !== 'interrupted')) throw new Error('Only failed or interrupted child tasks can be ignored');
+      if (ignored) this.db.prepare('INSERT OR IGNORE INTO review_dismissals(taskId,status,updatedAt) VALUES (?,?,?)').run(task.id,task.status,task.updatedAt);
+      else this.db.prepare('DELETE FROM review_dismissals WHERE taskId=? AND status=? AND updatedAt=?').run(task.id,task.status,task.updatedAt);
+      return true;
+    })();
+  }
   createTask(input: Pick<Task, 'prompt'|'provider'|'workspace'> & Partial<Task>) {
     const now = new Date().toISOString();
     return this.saveTask({ id: randomUUID(), parentId: null, title: input.prompt.slice(0,80), model: '', executionPath: null, branch: null, baseCommit: null, sessionId: null, status: 'queued', result: '', error: '', scheduleId: null, createdAt: now, updatedAt: now, prompt: input.prompt, provider: input.provider, workspace: input.workspace, ...Object.fromEntries(Object.entries(input).filter(([,v])=>v!==undefined)) });
@@ -55,6 +74,10 @@ export class Store {
   syncCursor(taskId:string):number {
     const row=this.db.prepare("SELECT MAX(id) AS id FROM events WHERE taskId=? AND type IN ('created','user_message','turn_started','message')").get(taskId) as {id:number|null}|undefined;
     return row?.id||0;
+  }
+  statusVersions():Record<string,number>{
+    const rows=this.db.prepare("SELECT taskId,MAX(id) AS id FROM events WHERE type='status' AND taskId IS NOT NULL GROUP BY taskId").all() as {taskId:string;id:number}[];
+    return Object.fromEntries(rows.map(row=>[row.taskId,row.id]));
   }
   saveApproval(value: Approval) { this.db.prepare('INSERT OR REPLACE INTO approvals VALUES (?, ?)').run(value.id, JSON.stringify(value)); }
   approvals() { return this.all<Approval>('approvals'); }

@@ -50,6 +50,24 @@ test('legacy settings fallback is side-effect free; scoped settings and task def
   try{assert.equal(workspaceAgents(reopened.settings(),a).claudeModel,'claude-A');assert.equal(reopened.task(task.id).workerDefaults?.workerProvider,'claude');assert.equal(reopened.settings().coordinatorProvider,'codex');}finally{reopened.close();}
 });
 
+test('review dismissal persists per failed child version and workspace, undo restores attention without task mutation',async t=>{
+  const {dir,a,b,store,api,engine,fake}=await fixture(t);await api('workspaces','POST',{workspace:b});
+  const parentA=store.createTask({prompt:'parent A',workspace:a,provider:'codex',status:'completed'}),parentB=store.createTask({prompt:'parent B',workspace:b,provider:'codex',status:'completed'});
+  const failedA=store.createTask({prompt:'failed A',workspace:a,provider:'codex',parentId:parentA.id,status:'failed',error:'preserve me',result:'partial'}),failedB=store.createTask({prompt:'failed B',workspace:b,provider:'codex',parentId:parentB.id,status:'interrupted'});
+  store.event(failedA.id,'result',{text:'history'});const stale=structuredClone(store.task(failedA.id));
+  assert.equal((await api('tasks/'+parentA.id+'/review-dismissal','POST',{ignored:true})).status,400);
+  const retried=store.task(failedA.id);retried.status='queued';store.saveTask(retried);retried.status='failed';store.saveTask(retried);
+  assert.equal((await api('tasks/'+failedA.id+'/review-dismissal','POST',{ignored:true,expected:{status:stale.status,updatedAt:stale.updatedAt}})).status,409);
+  assert.deepEqual(store.reviewDismissals(),[]);assert.equal(store.task(failedA.id).status,'failed');
+  const current=structuredClone(store.task(failedA.id));
+  assert.equal((await api('tasks/'+failedA.id+'/review-dismissal','POST',{ignored:true,expected:{status:current.status,updatedAt:current.updatedAt}})).status,200);
+  const state=await api('state');assert.deepEqual(state.data.reviewDismissals,[{taskId:failedA.id,status:'failed',updatedAt:current.updatedAt}]);
+  assert.deepEqual(store.task(failedA.id),current);assert.equal(store.events(0,failedA.id).some(e=>e.type==='result'),true);assert.equal(fake.runs.size,0);
+  const reopened=new Store(join(dir,'test.db'));try{assert.deepEqual(reopened.reviewDismissals(),state.data.reviewDismissals);}finally{reopened.close();}
+  assert.equal((await api('tasks/'+failedA.id+'/review-dismissal','POST',{ignored:false,expected:{status:current.status,updatedAt:current.updatedAt}})).status,200);assert.deepEqual(store.reviewDismissals(),[]);
+  assert.equal((await api('tasks/'+failedB.id+'/review-dismissal','POST',{ignored:true,expected:{status:failedB.status,updatedAt:failedB.updatedAt}})).status,200);assert.equal(store.reviewDismissals()[0]?.taskId,failedB.id);
+});
+
 test('A active Codex permits canonical B registration, Claude PM and concurrent defaults without touching A approvals/session',async t=>{
   const {dir,a,b,store,fake,engine,api,config}=await fixture(t);
   const pmA=await engine.messagePM(a,'A continues');await until(()=>fake.runs.has(pmA.id));

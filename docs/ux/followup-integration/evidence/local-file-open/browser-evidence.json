@@ -1,0 +1,27 @@
+{
+  "fixture": "temporary SQLite/workspace, fake adapter and launcher; no real opener invoked",
+  "directUrl": "http://127.0.0.1:41383/api/previews?workspace=%2Ftmp%2Flocal-file-open-e2e-5vDXuj%2Fregistered-workspace&path=%2Ftmp%2Flocal-file-open-e2e-5vDXuj%2Fregistered-workspace%2Fdocs%2Fux%2Frealtime-integration%2FREADME.md",
+  "openPostCount": 2,
+  "fakeLaunchArgv": [
+    [
+      "xdg-open",
+      "/tmp/local-file-open-e2e-5vDXuj/registered-workspace/docs/ux/realtime-integration/README.md"
+    ],
+    [
+      "xdg-open",
+      "/tmp/local-file-open-e2e-5vDXuj/registered-workspace/docs/ux/realtime-integration/README.md"
+    ],
+    [
+      "xdg-open",
+      "/tmp/local-file-open-e2e-5vDXuj/registered-workspace/docs/ux/realtime-integration/README.md"
+    ]
+  ],
+  "checks": [
+    "click action POST opened local document",
+    "Enter on focused link POSTed and showed text fallback",
+    "direct preview URL rendered safe landing with explicit action and did not launch on GET",
+    "landing fallback showed text and downloaded README.md",
+    "image link remained a PNG preview"
+  ],
+  "browserErrors": []
+}

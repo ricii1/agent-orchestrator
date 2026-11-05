@@ -7,7 +7,8 @@ import { promisify } from 'node:util';
 import { Engine } from './engine.js';
 import { Scheduler } from './scheduler.js';
 import { UsageService } from './usage.js';
-import { readPreview } from './artifacts.js';
+import { isTextDocument, openLocalDocument as openDocument, readDocument, readPreview } from './artifacts.js';
+import {TaskNotifications,type NativeSender} from './notifications.js';
 import { allowedWorkspace, browseFolders, contains, diff, merge, repoRoot } from './workspace.js';
 import { active, sameWorkspaceAgents, workspaceAgents, type Settings, type WorkspaceAgents } from './types.js';
 const exec=promisify(execFile);
@@ -21,9 +22,16 @@ async function body(req: IncomingMessage) {
 }
 const text=(value: unknown,name: string,max=100000): string=> { if(typeof value!=='string' || !value.trim() || value.length>max) throw new Error(`Invalid ${name}`); return value; };
 const provider=(value: unknown)=> { if(value!=='claude' && value!=='codex') throw new Error('Invalid provider'); return value; };
-export function server(engine: Engine,scheduler: Scheduler,publicDir: string,usage=new UsageService()) {
+const html=(value:string)=>value.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
+const js=(value:string)=>JSON.stringify(value).replace(/</g,'\\u003c');
+export type ServerOptions={openLocal?:typeof openDocument;nativeSender?:NativeSender};
+export function server(engine: Engine,scheduler: Scheduler,publicDir: string,usage=new UsageService(),options:ServerOptions={}) {
+  const openLocal=options.openLocal||openDocument,nativeSender=options.nativeSender;
   const streams=new Set<ServerResponse>();
   const terminals=new Terminals(()=>engine.store.settings().roots);
+  const taskNotifications=new TaskNotifications(engine,nativeSender);
+  const notificationListener=(event:any)=>{void taskNotifications.onEvent(event).catch(()=>{});};
+  engine.on('event',notificationListener);
   let healthCache: {time:number;value:any} | undefined;
   const app=createServer(async(req,res)=> {
     res.setHeader('X-Content-Type-Options','nosniff'); res.setHeader('Referrer-Policy','no-referrer');
@@ -42,9 +50,11 @@ export function server(engine: Engine,scheduler: Scheduler,publicDir: string,usa
       if(path.startsWith('/api/')) {
         if(req.method==='GET' && path==='/api/previews') {
           const workspace=url.searchParams.get('workspace')||'',file=url.searchParams.get('path')||'';
-          const preview=await readPreview(file,workspace,engine.store.settings().roots,engine.store.tasks());
-          res.writeHead(200,{'content-type':preview.mime,'content-length':preview.bytes.length,'cache-control':'no-store','x-content-type-options':'nosniff','content-security-policy':"default-src 'none'; sandbox"});res.end(preview.bytes);return;
+          try{const preview=await readPreview(file,workspace,engine.store.settings().roots,engine.store.tasks());res.writeHead(200,{'content-type':preview.mime,'content-length':preview.bytes.length,'cache-control':'no-store','x-content-type-options':'nosniff','content-security-policy':"default-src 'none'; sandbox"});res.end(preview.bytes);return;}
+          catch(previewError){if(!isTextDocument(file))throw previewError;const doc=await readDocument(file,workspace,engine.store.settings().roots,engine.store.tasks()),query=`workspace=${encodeURIComponent(workspace)}&path=${encodeURIComponent(file)}`,name=file.split(/[\\/]/).at(-1)||'dokumen';const page=`<!doctype html><html lang="id"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${html(name)}</title><style>body{font:16px system-ui;max-width:860px;margin:3rem auto;padding:0 1rem;color:#242820}button,a{font:inherit;padding:.6rem 1rem;margin-right:.5rem}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f2f3ed;padding:1rem;border-radius:8px}</style><h1>${html(name)}</h1><p>Aplikasi lokal berjalan di laptop tempat backend Orchestrator berjalan.</p><button id="open">Buka di aplikasi lokal</button><a href="/api/document-text?${query}">Lihat teks</a><a download="${html(name)}" href="/api/document-text?${query}&amp;download=1">Unduh</a><p id="status" role="status"></p><pre id="text" hidden>${html(doc.text)}</pre><script>document.querySelector('#open').onclick=async()=>{const s=document.querySelector('#status');try{const r=await fetch('/api/open-local',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({workspace:${js(workspace)},path:${js(file)}})});const d=await r.json();if(!r.ok)throw new Error(d.error||'Opener tidak tersedia');s.textContent='Dokumen dibuka di aplikasi lokal.'}catch(e){s.textContent='Aplikasi lokal tidak tersedia: '+e.message+' Teks aman tersedia di bawah.';document.querySelector('#text').hidden=false}}</script></html>`;res.writeHead(200,{'content-type':'text/html; charset=utf-8','cache-control':'no-store','content-security-policy':"default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; form-action 'none'"});res.end(page);return;}
         }
+        if(req.method==='POST' && path==='/api/open-local') { const input=await body(req);return json(200,await openLocal(text(input.path,'path',4096),text(input.workspace,'workspace',4096),engine.store.settings().roots,engine.store.tasks())); }
+        if(req.method==='GET' && path==='/api/document-text') { const file=await readDocument(url.searchParams.get('path')||'',url.searchParams.get('workspace')||'',engine.store.settings().roots,engine.store.tasks());res.writeHead(200,{'content-type':'text/plain; charset=utf-8','cache-control':'no-store',...(url.searchParams.get('download')==='1'?{'content-disposition':`attachment; filename*=UTF-8''${encodeURIComponent(file.path.split(/[\\/]/).at(-1)||'document.txt')}`}:{})});res.end(file.text);return; }
         if(path==='/api/terminals'&&req.method==='POST'){const input=await body(req);return json(200,await terminals.open(text(input.workspace,'workspace',4096)));}
         const terminalMatch=/^\/api\/terminals\/([a-f0-9-]+)$/.exec(path);
         if(terminalMatch){
@@ -61,7 +71,11 @@ export function server(engine: Engine,scheduler: Scheduler,publicDir: string,usa
         }
         if(req.method==='GET' && path==='/api/usage') return json(200,await usage.get(url.searchParams.get('refresh')==='1'));
         if(req.method==='POST' && path==='/api/pm/messages') { const input=await body(req); return json(200,await engine.messagePM(text(input.workspace,'workspace',4096),text(input.text,'message'),input.expectedAgents)); }
-        if(req.method==='GET' && path==='/api/state') return json(200,{ capabilities:{permissionModes:true},tasks:engine.store.tasks(),terminals:terminals.summary(),approvals:engine.store.approvals(),schedules:engine.store.all('schedules'),settings:engine.store.settings() });
+        if(req.method==='GET' && path==='/api/state') return json(200,{ capabilities:{permissionModes:true},tasks:engine.store.tasks(),reviewDismissals:engine.store.reviewDismissals(),statusVersions:engine.store.statusVersions(),terminals:terminals.summary(),approvals:engine.store.approvals(),schedules:engine.store.all('schedules'),settings:engine.store.settings() });
+        if(path==='/api/notifications'&&req.method==='GET')return json(200,{preferences:taskNotifications.preferences(),capability:await taskNotifications.status()});
+        if(path==='/api/notifications'&&req.method==='PUT'){await taskNotifications.status();return json(200,{preferences:taskNotifications.setPreferences(await body(req))});}
+        if(path==='/api/notifications/claim'&&req.method==='POST'){const input=await body(req);return json(200,{claimed:taskNotifications.claim(text(input.key,'notification key',256))});}
+        if(path==='/api/notifications/test'&&req.method==='POST'){await body(req);await taskNotifications.test();return json(200,{ok:true});}
         if(req.method==='GET' && path==='/api/providers') {
           if(!healthCache || Date.now()-healthCache.time>30000) {
             const entries=await Promise.all(['claude','codex'].map(async p=> {
@@ -97,7 +111,7 @@ export function server(engine: Engine,scheduler: Scheduler,publicDir: string,usa
           const heartbeat=setInterval(()=>res.write(': heartbeat\n\n'),15000);
           engine.on('event',flush); res.on('close',()=> { clearInterval(heartbeat); engine.off('event',flush); streams.delete(res); }); flush(); return;
         }
-        const match=/^\/api\/tasks\/([^/]+)(?:\/(messages|cancel|resume|diff|merge|events|compact))?$/.exec(path);
+        const match=/^\/api\/tasks\/([^/]+)(?:\/(messages|cancel|resume|diff|merge|events|compact|review-dismissal))?$/.exec(path);
         if(match) {
           const [,id,action]=match; const task=engine.store.task(id);
           if(req.method==='GET' && action==='diff') return json(200,await diff(task));
@@ -118,6 +132,16 @@ export function server(engine: Engine,scheduler: Scheduler,publicDir: string,usa
             if(action==='compact'){await engine.compact(id);return json(200,{ok:true});}
             if(action==='cancel') { engine.cancel(id); return json(200,{ok:true}); }
             if(action==='resume') { await engine.resume(id); return json(200,{ok:true}); }
+            if(action==='review-dismissal') {
+              if(Object.keys(input).some(key=>key!=='ignored'&&key!=='expected')||typeof input.ignored!=='boolean'||!input.expected||typeof input.expected!=='object'||Array.isArray(input.expected)||Object.keys(input.expected).length!==2||Object.keys(input.expected).some(key=>key!=='status'&&key!=='updatedAt'))throw new Error('Expected task version and ignored flag are required');
+              if(!['failed','interrupted'].includes(input.expected.status))throw new Error('Invalid expected task status');
+              const expected={status:input.expected.status,updatedAt:text(input.expected.updatedAt,'expected updatedAt',100)} as const;
+              if(!task.parentId)throw new Error('Only child tasks can be ignored');
+              const parent=engine.store.task(task.parentId);
+              await allowedWorkspace(parent.workspace,engine.store.settings().roots);
+              if(!engine.store.setReviewDismissal(id,input.ignored,expected))return json(409,{error:'Tugas berubah sejak terakhir ditampilkan. Daftar sudah diperbarui; tinjau versi terbaru sebelum memilih lagi.'});
+              return json(200,{ok:true});
+            }
             if(action==='merge') {
               if(input.confirm!==true || task.status!=='completed' || engine.running.has(id)) throw new Error('Review the completed worktree diff and explicitly confirm merge');
               // Serialized per repository, including while a Git subprocess is running.
@@ -204,6 +228,6 @@ export function server(engine: Engine,scheduler: Scheduler,publicDir: string,usa
     } catch(error) { json(400,{error: error instanceof Error?error.message:String(error)}); }
   });
   const merging=new Set<string>();
-  app.on('close',()=>terminals.shutdown());
+  app.on('close',()=>{terminals.shutdown();engine.off('event',notificationListener);});
   return { app, closeStreams:()=> { for(const res of streams) res.end(); } };
 }

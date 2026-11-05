@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {messageParts} from '../web/format.ts';
+import {isDocumentLink,messageParts} from '../web/format.ts';
 test('PM message formatting preserves prose while rendering bold domain and inline code',()=>{
  assert.deepEqual(messageParts('Saran alamat: **http://kantor.test**. Alternatif: `office.test` atau `markas.test`.'),[
   {kind:'text',text:'Saran alamat: '},{kind:'strong',text:'http://kantor.test'},{kind:'text',text:'. Alternatif: '},{kind:'code',text:'office.test'},{kind:'text',text:' atau '},{kind:'code',text:'markas.test'},{kind:'text',text:'.'},
@@ -25,4 +25,8 @@ test('markdown links allow safe web links and workspace previews but reject unsa
  ]);
  assert.deepEqual(messageParts('[x](x.png)'),[{kind:'text',text:'[x](x.png)'}]);
  assert.deepEqual(messageParts('[runtime](/tmp/.data/worktrees/task/image.png)','/work'),[{kind:'text',text:'[runtime](/tmp/.data/worktrees/task/image.png)'}]);
+});
+test('document links are identified for explicit local opening while image links remain preview links',()=>{
+ const md=messageParts('[README](docs/ux/realtime-integration/README.md) [image](docs/chart.png)','/work');assert.equal(md[0].kind,'link');assert.equal(isDocumentLink(md[0].href!),true);assert.equal(isDocumentLink(md[2].href!),false);
+ assert.equal(isDocumentLink('https://example.test/?path=README.md'),false);assert.equal(isDocumentLink('//example.test/README.md'),false);
 });

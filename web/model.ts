@@ -1,7 +1,7 @@
 import {workspaceAgents,matchesPM} from '../src/types.js';
 export {workspaceAgents} from '../src/types.js';
-import type {Task,Status,Provider,WorkspaceAgents} from '../src/types.js';
-export type {Task,Status,Provider,Approval,Schedule,Settings,Event} from '../src/types.js';
+import type {Task,Status,Provider,WorkspaceAgents,ReviewDismissal} from '../src/types.js';
+export type {Task,Status,Provider,Approval,Schedule,Settings,Event,ReviewDismissal} from '../src/types.js';
 export type {Usage,ProviderQuota,QuotaWindow} from '../src/usage.js';
 export const isWorking=(status:Status)=>['queued','running','waiting'].includes(status);
 export const inWorkspace=(task:Task,workspace:string,tasks:Task[])=>{const parent=task.parentId?tasks.find(t=>t.id===task.parentId):undefined;return (parent?.workspace||task.workspace)===workspace;};
@@ -10,9 +10,12 @@ export const pmFor=(tasks:Task[],workspace:string,provider:Provider,agents?:Work
 export const pmHistory=(tasks:Task[],workspace:string)=>tasks.filter(t=>t.kind==='pm'&&t.workspace===workspace).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt));
 export const pmDraftKey=(workspace:string,settings:import('../src/types.js').Settings)=>{const agents=workspaceAgents(settings,workspace);return JSON.stringify([workspace,agents.coordinatorProvider,agents.coordinatorProvider==='claude'?agents.claudeModel:agents.codexModel,agents.workerProvider,agents.claudeModel,agents.codexModel]);};
 export const archive=(tasks:Task[],workspace:string)=>tasks.filter(t=>t.kind!=='pm'&&inWorkspace(t,workspace,tasks)&&!isWorking(t.status)).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt));
-export const needsReview=(task:Task,workspace:string,tasks:Task[])=>!!task.parentId&&inWorkspace(task,workspace,tasks)&&(task.status==='failed'||task.status==='interrupted');
+export const reviewKey=(task:Task)=>`${task.id}:${task.status}:${task.updatedAt}`;
+export const isReviewDismissed=(task:Task,dismissals:ReviewDismissal[]=[])=>dismissals.some(d=>d.taskId===task.id&&d.status===task.status&&d.updatedAt===task.updatedAt);
+export const needsReview=(task:Task,workspace:string,tasks:Task[],dismissals:ReviewDismissal[]=[] )=>!!task.parentId&&inWorkspace(task,workspace,tasks)&&(task.status==='failed'||task.status==='interrupted')&&!isReviewDismissed(task,dismissals);
 export const reviewReason=(task:Task)=>task.status==='failed'?'Tugas gagal. Periksa pesan error, aktivitas, dan perubahan sebelum memutuskan langkah berikutnya.':task.status==='interrupted'?'Sesi terputus. Tinjau aktivitas dan perubahan sebelum melanjutkan.':'';
-export const reviewTasks=(tasks:Task[],workspace:string)=>tasks.filter(task=>needsReview(task,workspace,tasks)).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt));
+export const reviewTasks=(tasks:Task[],workspace:string,dismissals:ReviewDismissal[]=[] )=>tasks.filter(task=>needsReview(task,workspace,tasks,dismissals)).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt));
+export const ignoredReviewTasks=(tasks:Task[],workspace:string,dismissals:ReviewDismissal[]=[] )=>tasks.filter(task=>!!task.parentId&&inWorkspace(task,workspace,tasks)&&(task.status==='failed'||task.status==='interrupted')&&isReviewDismissed(task,dismissals)).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt));
 export const shortPath=(path:string)=>path.split('/').filter(Boolean).at(-1)||path||'Pilih workspace';
 export const roleOf=(task:Task)=>task.role||task.title||'Freelancer';
 export const statusText:Record<Status,string>={queued:'Mengantre',running:'Bekerja',waiting:'Menunggu',completed:'Selesai',failed:'Gagal',cancelled:'Dihentikan',interrupted:'Terputus'};

@@ -1,0 +1,968 @@
+{
+  "phase": "before",
+  "baseline": "5caecdb49f385911ab83328977426f5e25a8ec9e",
+  "sessions": [
+    {
+      "width": 1440,
+      "suggestion": {
+        "lines": [
+          "➜  ~ echo suggestion-demo",
+          "",
+          "",
+          ""
+        ],
+        "colors": [
+          {
+            "text": "➜  ",
+            "color": "rgb(189, 230, 163)"
+          },
+          {
+            "text": "~",
+            "color": "rgb(164, 225, 219)"
+          },
+          {
+            "text": " ",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "echo",
+            "color": "rgb(165, 204, 140)"
+          },
+          {
+            "text": " ",
+            "color": "rgb(22, 29, 25)"
+          },
+          {
+            "text": "suggestion-demo",
+            "color": "rgb(138, 148, 141)"
+          }
+        ],
+        "cols": 148,
+        "rows": 23
+      },
+      "afterEnter": [
+        "➜  ~ echo                ",
+        "",
+        "➜  ~  ",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "rendered": {
+        "lines": [
+          "➜  ~ echo                ",
+          "➜  ~ rg --color=auto --colors 'match:fg:red' color sample.txt",
+          "1:color",
+          "➜  ~  "
+        ],
+        "colors": [
+          {
+            "text": "➜  ",
+            "color": "rgb(189, 230, 163)"
+          },
+          {
+            "text": "~",
+            "color": "rgb(164, 225, 219)"
+          },
+          {
+            "text": " ",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "echo",
+            "color": "rgb(165, 204, 140)"
+          },
+          {
+            "text": "                ",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "➜  ",
+            "color": "rgb(189, 230, 163)"
+          },
+          {
+            "text": "~",
+            "color": "rgb(164, 225, 219)"
+          },
+          {
+            "text": " ",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "rg",
+            "color": "rgb(165, 204, 140)"
+          },
+          {
+            "text": " --color=auto --colors ",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "'match:fg:red'",
+            "color": "rgb(229, 199, 132)"
+          },
+          {
+            "text": " color ",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "sample.txt",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "1:color",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "➜  ",
+            "color": "rgb(189, 230, 163)"
+          },
+          {
+            "text": "~",
+            "color": "rgb(164, 225, 219)"
+          },
+          {
+            "text": " ",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": " ",
+            "color": "rgb(228, 239, 220)"
+          }
+        ]
+      },
+      "pty": {
+        "redMatch": false,
+        "envLine": "ENV_TERM=xterm-256color COLORTERM= NO_COLOR=1",
+        "input": [
+          "e",
+          "c",
+          "h",
+          "o",
+          "\r",
+          "r",
+          "g",
+          " ",
+          "-",
+          "-",
+          "c",
+          "o",
+          "l",
+          "o",
+          "r",
+          "=",
+          "a",
+          "u",
+          "t",
+          "o",
+          " ",
+          "-",
+          "-",
+          "c",
+          "o",
+          "l",
+          "o",
+          "r",
+          "s",
+          " ",
+          "'",
+          "m",
+          "a",
+          "t",
+          "c",
+          "h",
+          ":",
+          "f",
+          "g",
+          ":",
+          "r",
+          "e",
+          "d",
+          "'",
+          " ",
+          "c",
+          "o",
+          "l",
+          "o",
+          "r",
+          " ",
+          "s",
+          "a",
+          "m",
+          "p",
+          "l",
+          "e",
+          ".",
+          "t",
+          "x",
+          "t",
+          "\r",
+          "p",
+          "r",
+          "i",
+          "n",
+          "t",
+          "f",
+          " ",
+          "\"",
+          "E",
+          "N",
+          "V",
+          "_",
+          "T",
+          "E",
+          "R",
+          "M",
+          "=",
+          "%",
+          "s",
+          " ",
+          "C",
+          "O",
+          "L",
+          "O",
+          "R",
+          "T",
+          "E",
+          "R",
+          "M",
+          "=",
+          "%",
+          "s",
+          " ",
+          "N",
+          "O",
+          "_",
+          "C",
+          "O",
+          "L",
+          "O",
+          "R",
+          "=",
+          "%",
+          "s",
+          "\\",
+          "n",
+          "\"",
+          " ",
+          "\"",
+          "$",
+          "T",
+          "E",
+          "R",
+          "M",
+          "\"",
+          " ",
+          "\"",
+          "$",
+          "C",
+          "O",
+          "L",
+          "O",
+          "R",
+          "T",
+          "E",
+          "R",
+          "M",
+          "\"",
+          " ",
+          "\"",
+          "$",
+          "{",
+          "N",
+          "O",
+          "_",
+          "C",
+          "O",
+          "L",
+          "O",
+          "R",
+          "-",
+          "u",
+          "n",
+          "s",
+          "e",
+          "t",
+          "}",
+          "\"",
+          "\r"
+        ],
+        "ansiCount": 2184
+      },
+      "errors": []
+    },
+    {
+      "width": 390,
+      "suggestion": {
+        "lines": [
+          "%                                          ",
+          "➜  ~ echo suggestion-demo",
+          "",
+          ""
+        ],
+        "colors": [
+          {
+            "text": "%",
+            "color": "rgb(22, 29, 25)"
+          },
+          {
+            "text": "                                          ",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "➜  ",
+            "color": "rgb(189, 230, 163)"
+          },
+          {
+            "text": "~",
+            "color": "rgb(164, 225, 219)"
+          },
+          {
+            "text": " ",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "echo",
+            "color": "rgb(165, 204, 140)"
+          },
+          {
+            "text": " ",
+            "color": "rgb(22, 29, 25)"
+          },
+          {
+            "text": "suggestion-demo",
+            "color": "rgb(138, 148, 141)"
+          }
+        ],
+        "cols": 43,
+        "rows": 33
+      },
+      "afterEnter": [
+        "%                                          ",
+        "➜  ~ echo                ",
+        "",
+        "%                                          ",
+        "➜  ~  ",
+        "",
+        "",
+        ""
+      ],
+      "rendered": {
+        "lines": [
+          "%                                          ",
+          "➜  ~ echo                ",
+          "%                                          ",
+          "➜  ~ rg --color=auto --colors 'match:fg:rd'",
+          "rgolor sa                'match:fg:red'   s",
+          "rg                       'match:fg:red'   s",
+          "rgple.t                  'match:fg:red'   s",
+          "rgple.tx                 'match:fg:red'   s",
+          "ample.txt",
+          "1:color",
+          "%                                          ",
+          "➜  ~  "
+        ],
+        "colors": [
+          {
+            "text": "'match:fg:rd'",
+            "color": "rgb(229, 199, 132)"
+          },
+          {
+            "text": "rgolor ",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "sa",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "                'match:fg:red'   s",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "rg",
+            "color": "rgb(165, 204, 140)"
+          },
+          {
+            "text": "                       ",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "'match:fg:red'",
+            "color": "rgb(229, 199, 132)"
+          },
+          {
+            "text": "   ",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "s",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "rg",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "ple.t",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "                  'match:fg:red'   s",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "rg",
+            "color": "rgb(165, 204, 140)"
+          },
+          {
+            "text": "ple.tx                 ",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "'match:fg:red'",
+            "color": "rgb(229, 199, 132)"
+          },
+          {
+            "text": "   ",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "s",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "ample.txt",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "1:color",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "%",
+            "color": "rgb(22, 29, 25)"
+          },
+          {
+            "text": "                                          ",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "➜  ",
+            "color": "rgb(189, 230, 163)"
+          },
+          {
+            "text": "~",
+            "color": "rgb(164, 225, 219)"
+          },
+          {
+            "text": " ",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": " ",
+            "color": "rgb(228, 239, 220)"
+          }
+        ]
+      },
+      "pty": {
+        "redMatch": false,
+        "envLine": "ENV_TERM=xterm-256color COLORTERM= NO_COLOR=1",
+        "input": [
+          "e",
+          "c",
+          "h",
+          "o",
+          "\r",
+          "r",
+          "g",
+          " ",
+          "-",
+          "-",
+          "c",
+          "o",
+          "l",
+          "o",
+          "r",
+          "=",
+          "a",
+          "u",
+          "t",
+          "o",
+          " ",
+          "-",
+          "-",
+          "c",
+          "o",
+          "l",
+          "o",
+          "r",
+          "s",
+          " ",
+          "'",
+          "m",
+          "a",
+          "t",
+          "c",
+          "h",
+          ":",
+          "f",
+          "g",
+          ":",
+          "r",
+          "e",
+          "d",
+          "'",
+          " ",
+          "c",
+          "o",
+          "l",
+          "o",
+          "r",
+          " ",
+          "s",
+          "a",
+          "m",
+          "p",
+          "l",
+          "e",
+          ".",
+          "t",
+          "x",
+          "t",
+          "\r",
+          "p",
+          "r",
+          "i",
+          "n",
+          "t",
+          "f",
+          " ",
+          "\"",
+          "E",
+          "N",
+          "V",
+          "_",
+          "T",
+          "E",
+          "R",
+          "M",
+          "=",
+          "%",
+          "s",
+          " ",
+          "C",
+          "O",
+          "L",
+          "O",
+          "R",
+          "T",
+          "E",
+          "R",
+          "M",
+          "=",
+          "%",
+          "s",
+          " ",
+          "N",
+          "O",
+          "_",
+          "C",
+          "O",
+          "L",
+          "O",
+          "R",
+          "=",
+          "%",
+          "s",
+          "\\",
+          "n",
+          "\"",
+          " ",
+          "\"",
+          "$",
+          "T",
+          "E",
+          "R",
+          "M",
+          "\"",
+          " ",
+          "\"",
+          "$",
+          "C",
+          "O",
+          "L",
+          "O",
+          "R",
+          "T",
+          "E",
+          "R",
+          "M",
+          "\"",
+          " ",
+          "\"",
+          "$",
+          "{",
+          "N",
+          "O",
+          "_",
+          "C",
+          "O",
+          "L",
+          "O",
+          "R",
+          "-",
+          "u",
+          "n",
+          "s",
+          "e",
+          "t",
+          "}",
+          "\"",
+          "\r"
+        ],
+        "ansiCount": 2474
+      },
+      "errors": []
+    },
+    {
+      "width": 320,
+      "suggestion": {
+        "lines": [
+          "%                                 ",
+          "                                  ",
+          "➜  ~ echo suggestion-demo",
+          ""
+        ],
+        "colors": [
+          {
+            "text": "%",
+            "color": "rgb(22, 29, 25)"
+          },
+          {
+            "text": "                                 ",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "                                  ",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "➜  ",
+            "color": "rgb(189, 230, 163)"
+          },
+          {
+            "text": "~",
+            "color": "rgb(164, 225, 219)"
+          },
+          {
+            "text": " ",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "echo",
+            "color": "rgb(165, 204, 140)"
+          },
+          {
+            "text": " ",
+            "color": "rgb(22, 29, 25)"
+          },
+          {
+            "text": "suggestion-demo",
+            "color": "rgb(138, 148, 141)"
+          }
+        ],
+        "cols": 34,
+        "rows": 22
+      },
+      "afterEnter": [
+        "%                                 ",
+        "                                  ",
+        "➜  ~ echo                ",
+        "",
+        "%                                 ",
+        "                                  ",
+        "➜  ~  ",
+        ""
+      ],
+      "rendered": {
+        "lines": [
+          "➜  ~ rg --color=auto --colors 'md'",
+          "rgolor s                 'match:fg",
+          "rged'       sa           'match:fg",
+          "rged'       samp         'match:fg",
+          "rged'       sampl        'match:fg",
+          "rged'       sample.      'match:fg",
+          "rged'       sample.t     'match:fg",
+          ":red'       sample.txt",
+          "1:color",
+          "%                                 ",
+          "                                  ",
+          "➜  ~  "
+        ],
+        "colors": [
+          {
+            "text": "       ",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "samp",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "         'match:fg",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "rg",
+            "color": "rgb(165, 204, 140)"
+          },
+          {
+            "text": "ed'       sampl        ",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "'match:fg",
+            "color": "rgb(229, 199, 132)"
+          },
+          {
+            "text": "rg",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "ed'",
+            "color": "rgb(229, 199, 132)"
+          },
+          {
+            "text": "       ",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "sample.",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "      'match:fg",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "rg",
+            "color": "rgb(165, 204, 140)"
+          },
+          {
+            "text": "ed'       sample.t     ",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "'match:fg",
+            "color": "rgb(229, 199, 132)"
+          },
+          {
+            "text": ":red'",
+            "color": "rgb(229, 199, 132)"
+          },
+          {
+            "text": "       ",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "sample.txt",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "1:color",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "%",
+            "color": "rgb(22, 29, 25)"
+          },
+          {
+            "text": "                                 ",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "                                  ",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": "➜  ",
+            "color": "rgb(189, 230, 163)"
+          },
+          {
+            "text": "~",
+            "color": "rgb(164, 225, 219)"
+          },
+          {
+            "text": " ",
+            "color": "rgb(228, 239, 220)"
+          },
+          {
+            "text": " ",
+            "color": "rgb(228, 239, 220)"
+          }
+        ]
+      },
+      "pty": {
+        "redMatch": false,
+        "envLine": "ENV_TERM=xterm-256color COLORTERM= NO_COLOR=1",
+        "input": [
+          "e",
+          "c",
+          "h",
+          "o",
+          "\r",
+          "r",
+          "g",
+          " ",
+          "-",
+          "-",
+          "c",
+          "o",
+          "l",
+          "o",
+          "r",
+          "=",
+          "a",
+          "u",
+          "t",
+          "o",
+          " ",
+          "-",
+          "-",
+          "c",
+          "o",
+          "l",
+          "o",
+          "r",
+          "s",
+          " ",
+          "'",
+          "m",
+          "a",
+          "t",
+          "c",
+          "h",
+          ":",
+          "f",
+          "g",
+          ":",
+          "r",
+          "e",
+          "d",
+          "'",
+          " ",
+          "c",
+          "o",
+          "l",
+          "o",
+          "r",
+          " ",
+          "s",
+          "a",
+          "m",
+          "p",
+          "l",
+          "e",
+          ".",
+          "t",
+          "x",
+          "t",
+          "\r",
+          "p",
+          "r",
+          "i",
+          "n",
+          "t",
+          "f",
+          " ",
+          "\"",
+          "E",
+          "N",
+          "V",
+          "_",
+          "T",
+          "E",
+          "R",
+          "M",
+          "=",
+          "%",
+          "s",
+          " ",
+          "C",
+          "O",
+          "L",
+          "O",
+          "R",
+          "T",
+          "E",
+          "R",
+          "M",
+          "=",
+          "%",
+          "s",
+          " ",
+          "N",
+          "O",
+          "_",
+          "C",
+          "O",
+          "L",
+          "O",
+          "R",
+          "=",
+          "%",
+          "s",
+          "\\",
+          "n",
+          "\"",
+          " ",
+          "\"",
+          "$",
+          "T",
+          "E",
+          "R",
+          "M",
+          "\"",
+          " ",
+          "\"",
+          "$",
+          "C",
+          "O",
+          "L",
+          "O",
+          "R",
+          "T",
+          "E",
+          "R",
+          "M",
+          "\"",
+          " ",
+          "\"",
+          "$",
+          "{",
+          "N",
+          "O",
+          "_",
+          "C",
+          "O",
+          "L",
+          "O",
+          "R",
+          "-",
+          "u",
+          "n",
+          "s",
+          "e",
+          "t",
+          "}",
+          "\"",
+          "\r"
+        ],
+        "ansiCount": 2299
+      },
+      "errors": []
+    }
+  ]
+}

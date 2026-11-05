@@ -28,7 +28,7 @@ export function renderMessage(target:HTMLElement,source:string,workspace=''):voi
   const doc=target.ownerDocument;
   for(const part of messageParts(source,workspace)){
     if(part.kind==='text'){target.append(doc.createTextNode(part.text));continue;}
-    if(part.kind==='link'){const node=doc.createElement('a');node.textContent=part.text;node.href=part.href!;node.target='_blank';node.rel='noopener noreferrer';target.append(node);continue;}
+    if(part.kind==='link'){const node=doc.createElement('a');node.href=part.href!;if(isDocumentLink(part.href!)){node.textContent=`Buka di aplikasi lokal · ${part.text}`;node.dataset.localDocument='true';node.removeAttribute('target');}else{node.textContent=part.text;node.target='_blank';node.rel='noopener noreferrer';}target.append(node);continue;}
     const node=doc.createElement(part.kind==='strong'?'strong':part.kind==='block'?'pre':'code');
     if(part.kind==='strong')renderMessage(node,part.text,workspace);
     else node.textContent=part.text;
@@ -36,3 +36,4 @@ export function renderMessage(target:HTMLElement,source:string,workspace=''):voi
     target.append(node);
   }
 }
+export function isDocumentLink(href:string){try{const url=new URL(href,'http://local');return url.origin==='http://local'&&url.pathname==='/api/previews'&&/\.(?:md|markdown|txt|text|csv|json|ya?ml|toml)$/i.test(url.searchParams.get('path')||'');}catch{return false;}}

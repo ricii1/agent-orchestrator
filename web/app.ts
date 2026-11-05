@@ -8,12 +8,14 @@ import {approvalView,formExample} from './approval.js';
 import {renderMessage} from './format.js';
 import {chatEntries,chatName,workerChats,chatOption} from './chat.js';
 import {mergeTranscriptEvent} from './transcript-cache.js';
+import {Notifications,type NoticeTarget} from './notifications.js';
 import type {FolderListing} from '../src/workspace.js';
-import {workspaceAgents,pmDraftKey,pmHistory,freelancers,pmFor,archive,inWorkspace,roleOf,shortPath,statusText,isWorking,needsReview,reviewReason,reviewTasks,type Task,type Settings,type Approval,type Schedule,type Event,type Usage,type ProviderQuota} from './model.js';
+import {workspaceAgents,pmDraftKey,pmHistory,freelancers,pmFor,archive,inWorkspace,roleOf,shortPath,statusText,isWorking,needsReview,reviewReason,reviewTasks,ignoredReviewTasks,type Task,type Settings,type Approval,type Schedule,type Event,type Usage,type ProviderQuota,type ReviewDismissal} from './model.js';
 
 type TerminalSummary={id:string;workspace:string;exitCode:number|null};
-type State={terminals?:TerminalSummary[];capabilities?:{permissionModes?:boolean};tasks:Task[];settings:Settings;approvals:Approval[];schedules:Schedule[]};
+type State={terminals?:TerminalSummary[];capabilities?:{permissionModes?:boolean};statusVersions?:Record<string,number>;tasks:Task[];reviewDismissals:ReviewDismissal[];settings:Settings;approvals:Approval[];schedules:Schedule[]};
 const app=document.querySelector<HTMLDivElement>('#app')!;
+const notifications=new Notifications(async(target:NoticeTarget)=>{if(!target.taskId)return;await refresh();const task=state.tasks.find(t=>t.id===target.taskId);const parent=task?.parentId?state.tasks.find(t=>t.id===task.parentId):undefined;const root=parent?.workspace||task?.workspace;if(root&&state.settings.roots.includes(root))rememberWorkspace(root);await openTask(target.taskId);});
 let state:State;
 let selectedChatId:string|null=null;
 const completeHistory=new Set<string>(),expandedHistory=new Set<string>(),loadingHistory=new Set<string>();
@@ -24,7 +26,8 @@ let refreshTimer:number|undefined,streamController:AbortController|undefined;
 let refreshInFlight:Promise<void>|undefined,refreshAgain=false;
 const eventCache=new Map<string,Event[]>();
 const taskCursors=new Map<string,number>();
-let streamGeneration=0,catchupInFlight=new Set<string>();
+let streamGeneration=0,catchupInFlight=new Set<string>(),catchupRequested=new Set<string>();
+const unreadChat=new Set<string>();
 let streamRun:Promise<void>|undefined;
 const drafts=new Map<string,string>();
 const agents=()=>workspaceAgents(state.settings,workspace);
@@ -36,6 +39,7 @@ let officeOpen=false,officeExpanded=localStorage.getItem('office-expanded')==='t
 const errorText=(e:unknown)=>e instanceof Error?e.message:String(e);
 function feedback(message:string){const p=el('p','inline-error',message);p.setAttribute('role','alert');return p;}
 function persistentAction(container:HTMLElement,action:()=>Promise<unknown>){let busy=false;return async()=>{if(busy)return;busy=true;const trigger=document.activeElement instanceof HTMLButtonElement?document.activeElement:null;const disabled=trigger?.disabled;if(trigger)trigger.disabled=true;container.setAttribute('aria-busy','true');container.querySelector(':scope > .action-error')?.remove();try{await action();}catch(e){const p=feedback(errorText(e));p.classList.add('action-error');container.append(p);}finally{busy=false;container.removeAttribute('aria-busy');if(trigger)trigger.disabled=disabled||false;}};}
+function reviewAction(container:HTMLElement,action:()=>Promise<unknown>){let busy=false;return async()=>{if(busy)return;busy=true;container.setAttribute('aria-busy','true');container.querySelector(':scope > .action-error')?.remove();try{await action();}catch(e){const p=feedback(errorText(e));p.classList.add('action-error');container.append(p);}finally{busy=false;container.removeAttribute('aria-busy');}};}
 const terminals=new Map<string,TerminalPanel>();
 async function openTerminal(command?:string,session?:TerminalSummary){
   if(!workspace)throw new Error('Pilih workspace terlebih dahulu.');
@@ -47,7 +51,8 @@ async function openTerminal(command?:string,session?:TerminalSummary){
 async function compactChat(){const task=chatTask();if(!task)throw new Error('Mulai percakapan terlebih dahulu.');await api('tasks/'+task.id+'/compact','POST',{});await refresh();await loadEvents(task.id);}
 const office=new PixelOffice(id=>void showChat(id==='pm'?null:id).catch(notify));
 const el=<K extends keyof HTMLElementTagNameMap>(tag:K,cls='',text='')=>{const e=document.createElement(tag);e.className=cls;e.textContent=text;return e;};
-function formatted(text:string,cls='message-text'){const node=el('div',cls);renderMessage(node,text,workspace);return node;}
+function formatted(text:string,cls='message-text'){const node=el('div',cls);renderMessage(node,text,workspace);node.addEventListener('click',event=>{const link=(event.target as HTMLElement).closest<HTMLAnchorElement>('a[data-local-document]');if(!link)return;event.preventDefault();void openDocument(link.href).catch(notify);});return node;}
+async function openDocument(href:string){const url=new URL(href,location.href);if(url.origin!==location.origin||url.pathname!=='/api/previews')throw new Error('Tautan dokumen lokal tidak valid.');const path=url.searchParams.get('path')||'',sourceWorkspace=url.searchParams.get('workspace')||'';if(!sourceWorkspace)throw new Error('Workspace dokumen tidak tersedia.');try{await api('open-local','POST',{workspace:sourceWorkspace,path});const d=dialog('Dokumen dibuka');d.append(el('p','','Dokumen dibuka di aplikasi lokal pada laptop tempat backend ini berjalan.'));}catch(openError){const response=await fetch('/api/document-text?workspace='+encodeURIComponent(sourceWorkspace)+'&path='+encodeURIComponent(path));if(!response.ok)throw new Error(await response.text());const result=await response.text();const d=dialog('Buka dokumen');d.append(el('p','','Aplikasi lokal berjalan di laptop tempat backend ini berjalan.'),feedback(errorText(openError)));const pre=el('pre','result',result);d.append(pre,button('Unduh salinan',()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([result],{type:'text/plain;charset=utf-8'}));a.download=path.split('/').at(-1)||'document.txt';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);},'quiet'));}}
 function button(text:string,action:()=>unknown,cls=''){
   const b=el('button',cls,text);b.type='button';b.onclick=()=>void Promise.resolve().then(action).catch(notify);return b;
 }
@@ -80,6 +85,7 @@ function refresh():Promise<void>{
       const next:State=await api('state');
       if(JSON.stringify(next)!==JSON.stringify(state)){
         state=next;
+        notifications.observe(state);
         if(!state.settings.roots.includes(workspace))workspace=state.settings.roots[0]||'';
         if(selectedChatId&&!state.tasks.some(t=>t.id===selectedChatId&&inWorkspace(t,workspace,state.tasks)))selectedChatId=null;
         render();for(const d of document.querySelectorAll<HTMLDialogElement>('.review-dialog'))(d as HTMLDialogElement&{refreshReview?:()=>void}).refreshReview?.();
@@ -119,9 +125,9 @@ function render(){
   const account=el('section','accounts');account.id='account-usage';sidebar.append(account,button('Pengaturan',settingsDialog,'settings-button'));sidebar.classList.toggle('mobile-open',accountOpen);
   const main=el('main','main'),header=el('header','topbar'),heading=el('div');
   heading.append(el('h1','',shortPath(workspace)||'Kantor'),el('span','workspace-path',workspace||'Belum ada workspace'));
-  const controls=el('div','toolbar');controls.append(el('span','connection',connected?'Terhubung':'Menghubungkan kembali · status mungkin tertinggal'),button(officeExpanded?'Kembali ke percakapan':'Kantor besar',()=>setOfficeExpanded(!officeExpanded),'office-mode-toggle quiet'),button('Agent workspace',workspaceAgentsDialog,'quiet'),button('Riwayat',historyDialog,'quiet'),button('Terminal'+(state.terminals?' · '+state.terminals.filter(t=>t.exitCode===null).length:''),terminalList,'quiet'),button('Workspace & akun',()=>{accountOpen=!accountOpen;render();},'account-toggle quiet'),button('Pengaturan',settingsDialog,'mobile-settings quiet'));
+  const controls=el('div','toolbar');controls.append(el('span','connection',connected?'Terhubung':'Menghubungkan kembali · status mungkin tertinggal'),button(officeExpanded?'Kembali ke percakapan':'Kantor besar',()=>setOfficeExpanded(!officeExpanded),'office-mode-toggle quiet'),button('Notifikasi',notificationDialog,'quiet'),button('Agent workspace',workspaceAgentsDialog,'quiet'),button('Riwayat',historyDialog,'quiet'),button('Terminal'+(state.terminals?' · '+state.terminals.filter(t=>t.exitCode===null).length:''),terminalList,'quiet'),button('Workspace & akun',()=>{accountOpen=!accountOpen;render();},'account-toggle quiet'),button('Pengaturan',settingsDialog,'mobile-settings quiet'));
   const officeModeButton=controls.querySelector<HTMLButtonElement>('.office-mode-toggle')!;officeModeButton.dataset.focusKey='office-mode-toggle';officeModeButton.setAttribute('aria-pressed',String(officeExpanded));
-  const reviewCount=reviewTasks(state.tasks,workspace).length;if(reviewCount){const reviewButton=button('⚠ Perlu ditinjau · '+reviewCount,()=>historyDialog(true),'review-cta');reviewButton.setAttribute('aria-label',`${reviewCount} tugas perlu ditinjau di workspace ini`);controls.append(reviewButton);}controls.querySelector('.connection')?.setAttribute('role','status');if(workspace)heading.append(button('Salin path',async()=>{try{await navigator.clipboard.writeText(workspace);}catch{const range=document.createRange();range.selectNodeContents(heading.querySelector('.workspace-path')!);const selection=window.getSelection();selection?.removeAllRanges();selection?.addRange(range);}},'copy-path quiet'));header.append(heading,controls);
+  const reviewCount=reviewTasks(state.tasks,workspace,state.reviewDismissals).length;if(reviewCount){const reviewButton=button('⚠ Perlu ditinjau · '+reviewCount,()=>historyDialog(true),'review-cta');reviewButton.setAttribute('aria-label',`${reviewCount} tugas perlu ditinjau di workspace ini`);controls.append(reviewButton);}controls.querySelector('.connection')?.setAttribute('role','status');if(workspace)heading.append(button('Salin path',async()=>{try{await navigator.clipboard.writeText(workspace);}catch{const range=document.createRange();range.selectNodeContents(heading.querySelector('.workspace-path')!);const selection=window.getSelection();selection?.removeAllRanges();selection?.addRange(range);}},'copy-path quiet'));header.append(heading,controls);
   const guide=el('details','head-guide');guide.dataset.detailKey='head-guide';guide.open=!pm();guide.append(el('summary','','Freelancer Git mulai dari commit terakhir'),el('p','','Perubahan lokal yang belum di-commit tidak ikut. Git baru memerlukan initial commit. Folder non-Git yang tumpang tindih dikerjakan bergantian. Ini panduan statis, bukan pemeriksaan HEAD atau perubahan lokal.'));
   main.append(guide);
   const stage=el('section','office-stage office-view-stage');stage.setAttribute('aria-label','Kantor freelancer');stage.append(office.canvas);
@@ -131,8 +137,8 @@ function render(){
   for(const task of live){const b=button('',()=>showChat(task.id),'person');b.append(el('span','person-dot '+task.provider),el('span','',roleOf(task)),badge(task));people.append(b);}
   if(!live.length)people.append(el('span','no-freelancers','Belum ada freelancer yang bekerja.'));
   const fold=button(officeOpen?'Lipat kantor':'Lihat kantor',()=>{officeOpen=!officeOpen;render();},'office-toggle quiet');fold.setAttribute('aria-expanded',String(officeOpen));fold.setAttribute('aria-controls','office-canvas');office.canvas.id='office-canvas';stage.classList.toggle('office-open',officeOpen);stage.prepend(fold);stage.append(people);main.append(stage);
-  const problemTasks=reviewTasks(state.tasks,workspace);
-  if(problemTasks.length){const attention=el('div','attention');for(const t of problemTasks){const link=button('',()=>openTask(t.id),'review-attention');link.append(el('span','review-icon','⚠'),el('span','review-copy',`${roleOf(t)} · ${statusText[t.status]} · ${t.provider}`),el('small','review-why',reviewReason(t)));attention.append(link);}main.append(attention);}
+  const problemTasks=reviewTasks(state.tasks,workspace,state.reviewDismissals);
+  if(problemTasks.length){const attention=el('div','attention');for(const t of problemTasks){const item=el('div','review-attention-item'),link=button('',()=>openTask(t.id),'review-attention'),ignore=button('Abaikan',()=>dismissReview(t,true),'review-ignore quiet');ignore.dataset.focusKey='review-ignore-'+t.id;link.append(el('span','review-icon','⚠'),el('span','review-copy',`${roleOf(t)} · ${statusText[t.status]} · ${t.provider}`),el('small','review-why',reviewReason(t)));item.append(link,ignore);attention.append(item);}main.append(attention);}
   const note=el('footer','office-note');note.append(el('span','','Freelancer hadir saat dibutuhkan. Hasil pekerjaan tetap ada di riwayat.'));main.append(note);
   const viewed=chatTask(),logView=selectedChatId!==null;
   const chat=el('aside','chat-panel'),chatHeader=el('div','chat-header'),title=el('div','chat-title');
@@ -216,21 +222,26 @@ async function sendMessage(text:string){
     if(input.startsWith('/'))throw new Error('Perintah belum didukung di chat ini. Ketik /help atau gunakan CLI aslinya di Terminal.');
     const task:Task=await api('pm/messages','POST',{workspace:target,text,expectedAgents});drafts.delete(key);
     await refresh();await loadEvents(task.id);
+    if(workspace===target&&!selectedChatId&&chatTask()?.id===task.id)renderChat(true,false,true);
   }catch(error){sendErrors.set(key,errorText(error)+' Periksa riwayat sebelum mengirim ulang bila hasil pengiriman belum pasti.');}finally{sending=false;render();}
 }
-function cacheEvent(event:Event){
-  if(!event.taskId)return;
+function cacheEvent(event:Event):boolean{
+  if(!event.taskId)return false;
   const previous=eventCache.get(event.taskId)||[],next=mergeTranscriptEvent(previous,event,expandedHistory.has(event.taskId));
+  if(next===previous||next.length===previous.length&&next.every((item,index)=>item.id===previous[index].id))return false;
   if(previous.length>=300&&next.length>=300&&next[0].id>previous[0].id&&!expandedHistory.has(event.taskId))completeHistory.delete(event.taskId);
-  eventCache.set(event.taskId,next);
+  eventCache.set(event.taskId,next);return true;
 }
-function renderChat(follow=true){
-  const target=document.querySelector('#conversation');if(!target)return;
+function renderChat(follow=true,newContent=false,forceBottom=false){
+  const target=document.querySelector<HTMLElement>('#conversation');if(!target)return;
+  target.style.overflowAnchor='none';if(getComputedStyle(target).position==='static')target.style.position='relative';
   const focusOlder=document.activeElement?.classList.contains('load-older');
   const oldTop=target.scrollTop,focusedEvent=(document.activeElement?.closest('[data-event]') as HTMLElement|null)?.dataset.event;
   const nearBottom=target.scrollHeight-target.scrollTop-target.clientHeight<100;
   const open=new Set([...target.querySelectorAll<HTMLDetailsElement>('details[open]')].map(e=>e.dataset.event));
   const current=chatTask(),events=current?eventCache.get(current.id)||[]:[];
+  if(current&&newContent&&!nearBottom)unreadChat.add(current.id);
+  if(current&&(nearBottom||forceBottom))unreadChat.delete(current.id);
   target.replaceChildren();
   if(current&&events.length&&!completeHistory.has(current.id)){const older=button(loadingHistory.has(current.id)?'Memuat…':'Muat pesan sebelumnya',loadOlder,'load-older');older.disabled=loadingHistory.has(current.id);target.append(older);}
   const entries=current?chatEntries(current,events):[];
@@ -256,10 +267,10 @@ function renderChat(follow=true){
     const waiting=actors.length?`menunggu jawaban atau izin untuk ${actors.join(', ')}. Lihat permintaan di bawah.`:'sedang menunggu hasil worker.';
     target.append(el('div','thinking',`${chatName(current)} ${current.status==='waiting'?waiting:current.status==='queued'?'sedang mengantre…':'sedang bekerja…'}`));
   }
-  if(follow&&nearBottom)target.scrollTop=target.scrollHeight;
-  else{target.scrollTop=oldTop;if(focusedEvent)[...target.querySelectorAll<HTMLElement>('details[data-event]')].find(e=>e.dataset.event===focusedEvent)?.querySelector('summary')?.focus({preventScroll:true});}
+  if(!follow||!nearBottom){if(focusedEvent)[...target.querySelectorAll<HTMLElement>('details[data-event]')].find(e=>e.dataset.event===focusedEvent)?.querySelector('summary')?.focus({preventScroll:true});}
   if(focusOlder)(target.querySelector<HTMLButtonElement>('.load-older:not(:disabled)')||target as HTMLElement).focus({preventScroll:true});
-  if(follow&&!nearBottom&&events.length){const newer=button('Pesan baru',()=>{target.scrollTop=target.scrollHeight;newer.remove();},'new-messages');target.append(newer);}
+  if(current&&unreadChat.has(current.id)&&events.length){const newer=button('Pesan baru',()=>{unreadChat.delete(current.id);newer.remove();target.scrollTop=target.scrollHeight;},'new-messages');newer.style.position='absolute';newer.style.right='12px';newer.style.bottom='8px';newer.style.zIndex='1';target.append(newer);}
+  target.scrollTop=forceBottom||follow&&nearBottom?target.scrollHeight:oldTop;
 
 }
 function approvalCard(approval:Approval){
@@ -334,12 +345,14 @@ async function loadEvents(id:string){
   eventCache.set(id,merged);}catch(e){transcriptErrors.set(id,errorText(e));}finally{transcriptLoading.delete(id);if(chatTask()?.id===id)renderChat(false);}
 }
 async function catchupTask(id:string){
-  if(catchupInFlight.has(id)||document.hidden)return;catchupInFlight.add(id);
+  if(document.hidden)return;if(catchupInFlight.has(id)){catchupRequested.add(id);return;}catchupInFlight.add(id);
+  let transcriptChanged=false;
   try{
     let after=taskCursors.get(id);
     if(after===undefined){const sync:{after:number}=await api('tasks/'+id+'/events?sync=1');after=Math.max(0,sync.after-1);taskCursors.set(id,after);}
-    for(;;){const batch:Event[]=await api('tasks/'+id+'/events?after='+after);if(!batch.length)break;for(const event of batch)cacheEvent(event);after=batch.at(-1)!.id;taskCursors.set(id,after);if(batch.length<500)break;}
-  }catch{}finally{catchupInFlight.delete(id);if(chatTask()?.id===id)renderChat(false);}
+    for(;;){const batch:Event[]=await api('tasks/'+id+'/events?after='+after);if(!batch.length)break;for(const event of batch)transcriptChanged=cacheEvent(event)||transcriptChanged;after=batch.at(-1)!.id;taskCursors.set(id,after);if(batch.length<500)break;}
+    if(transcriptChanged&&chatTask()?.id===id)renderChat(true,true);
+  }catch{}finally{catchupInFlight.delete(id);if(catchupRequested.delete(id)&&!document.hidden)void catchupTask(id);}
 }
 async function loadOlder(){
   const current=chatTask();if(!current||loadingHistory.has(current.id))return;
@@ -368,8 +381,8 @@ async function stream(signal:AbortSignal){
         while((end=pending.indexOf('\n\n'))!==-1){
           const frame=pending.slice(0,end);pending=pending.slice(end+2);
           const data=frame.split('\n').find(line=>line.startsWith('data: '));if(!data)continue;
-          const event:Event=JSON.parse(data.slice(6));if(event.id<=cursor)continue;cursor=event.id;cacheEvent(event);
-          if(event.taskId===chatTask()?.id&&!chatFrame)chatFrame=requestAnimationFrame(()=>{chatFrame=0;renderChat();});
+          const event:Event=JSON.parse(data.slice(6));if(event.id<=cursor)continue;cursor=event.id;const transcriptChanged=cacheEvent(event);
+          if(transcriptChanged&&event.taskId===chatTask()?.id&&!chatFrame)chatFrame=requestAnimationFrame(()=>{chatFrame=0;renderChat(true,true);});
           if(['status','created','approval','approval_resolved','settings','schedule_updated','schedule_deleted','result','merge','command_started','command_result'].includes(event.type)){
             scheduleRefresh();
           }
@@ -499,29 +512,36 @@ function settingsDialog(){
   const advancedForm=section('Pengaturan lanjutan',[limit.label,claude.label,codex.label],'Simpan lanjutan',()=>({maxWorkers:Number(limit.input.value),claudeModel:claude.input.value,codexModel:codex.input.value}));advanced.append(advancedForm);
   d.append(button('Jadwal pekerjaan',scheduleList,'quiet settings-extra'));
 }
+function notificationDialog(){const d=dialog('Notifikasi');d.append(notifications.settingsPanel());return d;}
 function historyDialog(reviewOnly=false){
   const d=dialog(reviewOnly?'Perlu ditinjau':'Riwayat pekerjaan');d.classList.add('review-dialog');d.dataset.reviewWorkspace=workspace;
   const modes=el('div','review-filters');const list=el('div','review-list');
   const paint=()=>{
     const focused=document.activeElement instanceof HTMLElement&&d.contains(document.activeElement)?document.activeElement:null,focusMode=focused?.dataset.reviewMode,focusTask=focused?.dataset.reviewTaskId,scroll=list.scrollTop;
-    const filtered=d.dataset.reviewOnly==='true';d.dataset.reviewOnly=String(filtered);
-    modes.replaceChildren();const all=button('Semua riwayat',()=>{d.dataset.reviewOnly='false';paint();},filtered?'quiet':'review-filter-active');all.dataset.reviewMode='all';const needs=button(`Perlu ditinjau (${reviewTasks(state.tasks,d.dataset.reviewWorkspace||workspace).length})`,()=>{d.dataset.reviewOnly='true';paint();},filtered?'review-filter-active':'quiet');needs.dataset.reviewMode='review';all.setAttribute('aria-pressed',String(!filtered));needs.setAttribute('aria-pressed',String(filtered));modes.append(all,needs);
-    const targetWorkspace=d.dataset.reviewWorkspace||workspace;
-    const tasks=filtered?reviewTasks(state.tasks,targetWorkspace):[...pmHistory(state.tasks,targetWorkspace),...archive(state.tasks,targetWorkspace)];list.replaceChildren();
-    if(!tasks.length)list.append(el('p','empty',filtered?'Tidak ada tugas freelancer yang gagal atau terputus di workspace ini.':'Pekerjaan yang selesai, gagal, terputus, atau dihentikan akan tersimpan di sini.'));
-    for(const task of tasks){const needsReviewItem=needsReview(task,targetWorkspace,state.tasks);const row=button('',()=>{d.close();return openTask(task.id);},'history-row'+(needsReviewItem?' review-row':'')),text=el('div','review-row-copy');row.dataset.reviewTaskId=task.id;text.append(el('strong','',task.title),el('small','',`${task.kind==='pm'?'PM':roleOf(task)} · ${task.provider} · ${task.model||'model default'} · ${task.id.slice(0,8)} · ${new Date(task.updatedAt).toLocaleString('id-ID')}`));if(needsReviewItem)text.append(el('small','review-why',`Perlu ditinjau · ${statusText[task.status]}. ${reviewReason(task)}`));row.append(text,badge(task));list.append(row);}
-    list.scrollTop=scroll;if(focused){const restore=(focusTask&&list.querySelector<HTMLButtonElement>(`[data-review-task-id="${CSS.escape(focusTask)}"]`))||modes.querySelector<HTMLButtonElement>(`[data-review-mode="${focusMode|| (filtered?'review':'all')}"]`)||modes.querySelector<HTMLButtonElement>('[data-review-mode="review"]');restore?.focus({preventScroll:true});}
+    const mode=d.dataset.reviewMode||'all',targetWorkspace=d.dataset.reviewWorkspace||workspace;
+    modes.replaceChildren();const addMode=(key:string,label:string)=>{const b=button(label,()=>{d.dataset.reviewMode=key;paint();},mode===key?'review-filter-active':'quiet');b.dataset.reviewMode=key;b.setAttribute('aria-pressed',String(mode===key));modes.append(b);};
+    addMode('all','Semua riwayat');addMode('review',`Perlu ditinjau (${reviewTasks(state.tasks,targetWorkspace,state.reviewDismissals).length})`);addMode('ignored',`Diabaikan (${ignoredReviewTasks(state.tasks,targetWorkspace,state.reviewDismissals).length})`);
+    const tasks=mode==='review'?reviewTasks(state.tasks,targetWorkspace,state.reviewDismissals):mode==='ignored'?ignoredReviewTasks(state.tasks,targetWorkspace,state.reviewDismissals):[...pmHistory(state.tasks,targetWorkspace),...archive(state.tasks,targetWorkspace)];list.replaceChildren();
+    if(!tasks.length)list.append(el('p','empty',mode==='review'?'Tidak ada tugas freelancer yang perlu ditinjau di workspace ini.':mode==='ignored'?'Tidak ada tugas yang diabaikan di workspace ini.':'Pekerjaan yang selesai, gagal, terputus, atau dihentikan akan tersimpan di sini.'));
+    for(const task of tasks){const needsReviewItem=needsReview(task,targetWorkspace,state.tasks,state.reviewDismissals),ignored=mode==='ignored',wrap=el('div','review-row-wrap'),row=button('',()=>{d.close();return openTask(task.id);},'history-row'+(needsReviewItem||ignored?' review-row':'')),text=el('div','review-row-copy');row.dataset.reviewTaskId=task.id;text.append(el('strong','',task.title),el('small','',`${task.kind==='pm'?'PM':roleOf(task)} · ${task.provider} · ${task.model||'model default'} · ${task.id.slice(0,8)} · ${new Date(task.updatedAt).toLocaleString('id-ID')}`));if(needsReviewItem)text.append(el('small','review-why',`Perlu ditinjau · ${statusText[task.status]}. ${reviewReason(task)}`));if(ignored)text.append(el('small','review-ignored-label','Diabaikan · tetap tersimpan di riwayat'));row.append(text,badge(task));wrap.append(row);if(needsReviewItem||ignored){const action=button(ignored?'Tinjau lagi':'Abaikan',reviewAction(list,async()=>{await dismissReview(task,!ignored);}),ignored?'review-restore quiet':'review-ignore quiet');action.dataset.reviewTaskId=task.id;wrap.append(action);}list.append(wrap);}
+    list.scrollTop=scroll;if(focused){const restore=(focusTask&&list.querySelector<HTMLButtonElement>(`[data-review-task-id="${CSS.escape(focusTask)}"]`))||modes.querySelector<HTMLButtonElement>(`[data-review-mode="${focusMode||mode}"]`)||modes.querySelector<HTMLButtonElement>('[data-review-mode="review"]');restore?.focus({preventScroll:true});}
   };
-  d.dataset.reviewOnly=String(reviewOnly);d.append(modes,list);(d as HTMLDialogElement&{refreshReview?:()=>void}).refreshReview=paint;paint();
+  d.dataset.reviewMode=reviewOnly?'review':'all';d.append(modes,list);(d as HTMLDialogElement&{refreshReview?:()=>void}).refreshReview=paint;paint();
 }
-async function openTask(id:string){
+async function dismissReview(task:Task,ignored:boolean,detail?:HTMLDialogElement):Promise<boolean>{
+  try{await api('tasks/'+task.id+'/review-dismissal','POST',{ignored,expected:{status:task.status,updatedAt:task.updatedAt}});}
+  catch(error){if((error as {status?:number})?.status===409){const message='Tugas berubah sejak ditampilkan. Versi terbaru sudah dimuat; periksa lagi sebelum memilih.';await refresh();for(const d of document.querySelectorAll<HTMLDialogElement>('.review-dialog'))(d as HTMLDialogElement&{refreshReview?:()=>void}).refreshReview?.();if(detail){detail.close();await openTask(task.id,message);return false;}throw new Error(message);}throw error;}
+  await refresh();for(const d of document.querySelectorAll<HTMLDialogElement>('.review-dialog'))(d as HTMLDialogElement&{refreshReview?:()=>void}).refreshReview?.();return true;
+}
+async function openTask(id:string,notice?:string){
   const task=state.tasks.find(t=>t.id===id);if(!task)return;
-  const d=dialog(task.role||task.title),meta=el('div','task-meta');meta.append(el('span','',task.provider),badge(task));d.append(meta);if(needsReview(task,workspace,state.tasks))d.append(el('p','review-detail-reason','⚠ Perlu ditinjau · '+statusText[task.status]+'. '+reviewReason(task)));d.append(el('p','task-title',task.prompt),el('p','path',(task.executionPath?'Folder eksekusi: '+task.executionPath:'Workspace (folder eksekusi belum tersedia): '+task.workspace)+(task.branch?'\nBranch: '+task.branch:'')+(task.baseCommit?'\nCommit dasar: '+task.baseCommit:'')));
+  const d=dialog(task.role||task.title),meta=el('div','task-meta'),reviewVisible=needsReview(task,workspace,state.tasks,state.reviewDismissals),reviewIgnored=ignoredReviewTasks(state.tasks,workspace,state.reviewDismissals).some(t=>t.id===task.id);meta.append(el('span','',task.provider),badge(task));d.append(meta);if(notice)d.append(feedback(notice));if(reviewVisible)d.append(el('p','review-detail-reason','⚠ Perlu ditinjau · '+statusText[task.status]+'. '+reviewReason(task)));if(reviewIgnored)d.append(el('p','review-ignored-label','Diabaikan dari daftar perhatian. Tugas, hasil, dan aktivitas tetap tersimpan.'));d.append(el('p','task-title',task.prompt),el('p','path',(task.executionPath?'Folder eksekusi: '+task.executionPath:'Workspace (folder eksekusi belum tersedia): '+task.workspace)+(task.branch?'\nBranch: '+task.branch:'')+(task.baseCommit?'\nCommit dasar: '+task.baseCommit:'')));
   for(const a of state.approvals.filter(a=>a.taskId===id&&a.status==='pending'))d.append(approvalCard(a));
   if(task.result)d.append(el('h3','','Hasil'),formatted(task.result,'result message-text'));
   if(!task.result)d.append(el('p','','Belum ada hasil akhir.'));if(task.status==='interrupted')d.append(el('p','','Sesi terputus. Tinjau aktivitas dan perubahan sebelum melanjutkan.'));
   if(task.error)d.append(el('p','inline-error',task.error));
   const actions=el('div','actions');actions.append(button('Buka chat / log',()=>{d.close();return showChat(task.id);},'quiet'));
+  if(reviewVisible||reviewIgnored)actions.append(button(reviewIgnored?'Tinjau lagi':'Abaikan',persistentAction(d,async()=>{if(await dismissReview(task,!reviewIgnored,d)){d.close();await openTask(task.id);}}),reviewIgnored?'review-restore quiet':'review-ignore quiet'));
   if(isWorking(task.status))actions.append(button(task.parentId?'Hentikan freelancer':'Hentikan PM dan anak aktif',persistentAction(d,async()=>{if(!confirm(task.parentId?'Hentikan freelancer ini?':'Hentikan PM dan semua freelancer anak aktif?'))return;await api('tasks/'+id+'/cancel','POST',{});d.close();await refresh();}),'danger'));
   else if(['failed','interrupted','cancelled'].includes(task.status))actions.append(button('Lanjutkan '+roleOf(task),persistentAction(d,async()=>{await api('tasks/'+id+'/resume','POST',{});d.close();await refresh();}),'quiet'));
   if(task.branch)actions.append(button('Tinjau perubahan',()=>{d.close();return diffDialog(task);},'quiet'));d.append(actions);
@@ -529,7 +549,7 @@ async function openTask(id:string){
   d.append(activity);activity.append(el('p','transcript-status','Memuat aktivitas…'));
   const load=async()=>{activity.querySelector('.transcript-status')?.remove();const events:Event[]=await api('tasks/'+id+'/events?tail=1');
   for(const event of events.filter(e=>['tool','tool_output','tool_result','log','provider_error','permission_denied'].includes(e.type)))activity.append(el('pre','activity',JSON.stringify(event.data,null,2)));
-};const retry=button('Coba muat aktivitas lagi',persistentAction(d,load),'quiet');try{await load();}catch(e){d.append(feedback(errorText(e)),retry);}
+};const retry=button('Coba muat aktivitas lagi',persistentAction(d,load),'quiet');try{await load();}catch(e){d.append(feedback(errorText(e)),retry);}if(notice)(d.querySelector<HTMLElement>('.review-ignore,.review-restore')||d.querySelector<HTMLElement>('.dialog-header button'))?.focus({preventScroll:true});
 }
 async function diffDialog(task:Task){
   const d=dialog('Tinjau perubahan');d.append(el('p','transcript-status','Memuat perubahan…'));try{const data=await api('tasks/'+task.id+'/diff');d.querySelector('.transcript-status')?.remove();d.append(el('p','path',task.branch||''),el('pre','result',data.diff||'Tidak ada perubahan file terlacak.'));

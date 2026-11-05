@@ -116,3 +116,4 @@ dialog{width:min(740px,calc(100vw - 32px));max-height:90dvh;padding:24px;border-
 .approval-icon,.mini-pm{color:var(--ink)}
 .terminal-retry{background:var(--action);color:#fff;border-color:#c5d4bc}.terminal-retry:hover{background:#294b39;color:#fff}
 .composer-footer>button{flex-shrink:0;white-space:nowrap;min-width:76px}
+.notification-settings{display:grid;gap:14px}.notification-settings h3{margin:0}.notification-settings label{display:flex;align-items:center;gap:8px}.notification-settings input{width:auto}.kantor-notice{cursor:pointer;text-align:left}

@@ -1,0 +1,5836 @@
+{
+  "baseCommit": "5caecdb49f385911ab83328977426f5e25a8ec9e",
+  "fixture": true,
+  "providerInvoked": false,
+  "origin": "http://127.0.0.1:38607",
+  "scenarios": [
+    {
+      "scenario": "healthy SSE emit-receive-DOM",
+      "id": 870,
+      "emitAt": 1793862444306,
+      "receiveAt": 1793862444306,
+      "domAt": 1793862444319,
+      "emitToReceiveMs": 0,
+      "receiveToDomMs": 13,
+      "passed": true
+    },
+    {
+      "scenario": "dropped text repaired by task catch-up",
+      "textId": 871,
+      "statusId": 872,
+      "statusVisible": true,
+      "textVisible": true,
+      "waitMs": 5600,
+      "passed": true
+    },
+    {
+      "scenario": "lower-ID replay inserted after non-text tail",
+      "textId": 871,
+      "latestNonTextId": 872,
+      "receivedOnReplay": false,
+      "textVisible": true,
+      "reloadStarted": 1793862450292,
+      "waitAfterReloadMs": 1400,
+      "passed": true
+    },
+    {
+      "scenario": "half-open plus visible transition catch-up",
+      "textId": 873,
+      "browserHidden": false,
+      "textVisible": true,
+      "connectionLabel": "Terhubung",
+      "waitAfterVisibleMs": 5600,
+      "maxActiveStreams": 1,
+      "readerStats": {
+        "max": 1,
+        "active": 1
+      },
+      "passed": true
+    },
+    {
+      "scenario": "closed stream reconnect replay",
+      "textId": 875,
+      "domAt": 1793862459850,
+      "passed": true
+    },
+    {
+      "scenario": "sparse tail catch-up on workspace switch",
+      "workspace2": "/tmp/chat-realtime-hGoNoA/runtime/workspace-two",
+      "taskId": "67a6e31e-ca48-49e1-a314-e170cf3be323",
+      "textId": 264,
+      "nonTextTailId": 869,
+      "textVisible": true,
+      "droppedFromSSE": true,
+      "passed": true
+    },
+    {
+      "scenario": "catch-up request is coalesced and retried",
+      "textId": 876,
+      "requests": 2,
+      "visibilityState": "visible (synthetic event)",
+      "passed": true
+    },
+    {
+      "scenario": "native tab visibility observation",
+      "textId": 877,
+      "hiddenState": {
+        "visibilityState": "visible",
+        "hidden": false
+      },
+      "returnedState": {
+        "visibilityState": "visible",
+        "hidden": false
+      },
+      "transition": "Chromium did not change the original page visibility when another page was opened",
+      "nativeTabTransition": false,
+      "passed": true
+    },
+    {
+      "scenario": "catch-up follows near-bottom reader",
+      "textId": 938,
+      "top": 3306,
+      "height": 3746,
+      "client": 440,
+      "nearBottom": true,
+      "passed": true
+    },
+    {
+      "scenario": "scrolled-up position geometry trace",
+      "document": {
+        "scrollY": 0,
+        "scrollHeight": 1026,
+        "clientHeight": 1000
+      },
+      "conversation": {
+        "top": 307.984375,
+        "bottom": 748.390625,
+        "height": 440.40625,
+        "scrollTop": 0,
+        "scrollHeight": 3746,
+        "clientHeight": 440
+      },
+      "parent": {
+        "top": 156.984375,
+        "bottom": 1001.984375,
+        "height": 845,
+        "scrollTop": 0,
+        "scrollHeight": 843,
+        "clientHeight": 843
+      },
+      "expectedTop": 0,
+      "actualTop": 0
+    },
+    {
+      "scenario": "scrolled-up content preserves position and shows jump",
+      "textId": 939,
+      "top": 0,
+      "oldTop": 0,
+      "button": true,
+      "passed": true
+    },
+    {
+      "scenario": "new-message action jumps to bottom",
+      "nearBottom": true,
+      "button": false,
+      "passed": true
+    },
+    {
+      "scenario": "history prepend preserves message anchor",
+      "anchorTopBefore": 640.09375,
+      "anchorTop": 639.546875,
+      "height": 18191,
+      "passed": true
+    },
+    {
+      "scenario": "idle catch-up preserves scroll focus selection",
+      "requestDelta": 1,
+      "focus": "pm-message",
+      "selection": [
+        5,
+        10
+      ],
+      "scrollTop": 0,
+      "passed": true
+    },
+    {
+      "scenario": "own send follows latest message",
+      "nearBottom": true,
+      "focus": "",
+      "passed": true
+    },
+    {
+      "scenario": "concurrent workspace switch and delayed transcript fetch",
+      "lateTaskId": "29cb18b8-6089-4caf-a590-fd01d1bf1c3d",
+      "selectedTaskId": "67a6e31e-ca48-49e1-a314-e170cf3be323",
+      "transcriptTaskScoped": true,
+      "credentialsSeen": false,
+      "passed": true
+    }
+  ],
+  "events": [
+    {
+      "kind": "sse-write",
+      "id": 1,
+      "type": "created",
+      "replay": true,
+      "at": 1793862444267,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 263,
+      "type": "user_message",
+      "replay": true,
+      "at": 1793862444267,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 265,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444267,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 266,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444267,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 267,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444267,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 268,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444267,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 269,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 270,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 271,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 272,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 273,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 274,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 275,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 276,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 277,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 278,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 279,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 280,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 281,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 282,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 283,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 284,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 285,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 286,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 287,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 288,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 289,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 290,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 291,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 292,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 293,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 294,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 295,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 296,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 297,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 298,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 299,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 300,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 301,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 302,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 303,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 304,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 305,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 306,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 307,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 308,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 309,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 310,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 311,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 312,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 313,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 314,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 315,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 316,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 317,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 318,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 319,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 320,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 321,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 322,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 323,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 324,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 325,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 326,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 327,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 328,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 329,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 330,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 331,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 332,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 333,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 334,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 335,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 336,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 337,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 338,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 339,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 340,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 341,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 342,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 343,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 344,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 345,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 346,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 347,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 348,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 349,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 350,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 351,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 352,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 353,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 354,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 355,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 356,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 357,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 358,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 359,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 360,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 361,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 362,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 363,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 364,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 365,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 366,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 367,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 368,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 369,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 370,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 371,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 372,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 373,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 374,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 375,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 376,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 377,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 378,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 379,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 380,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 381,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 382,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 383,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 384,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 385,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 386,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 387,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 388,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 389,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 390,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444268,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 391,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 392,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 393,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 394,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 395,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 396,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 397,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 398,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 399,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 400,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 401,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 402,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 403,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 404,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 405,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 406,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 407,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 408,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 409,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 410,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 411,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 412,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 413,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 414,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 415,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 416,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 417,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 418,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 419,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 420,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 421,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 422,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 423,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 424,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 425,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 426,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 427,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 428,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 429,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 430,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 431,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 432,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 433,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 434,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 435,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 436,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 437,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 438,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 439,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 440,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 441,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 442,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 443,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 444,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 445,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 446,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 447,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 448,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 449,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 450,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 451,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 452,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 453,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 454,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 455,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 456,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 457,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 458,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 459,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 460,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 461,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 462,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 463,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 464,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 465,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 466,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 467,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 468,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 469,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 470,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 471,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 472,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 473,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 474,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 475,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 476,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 477,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 478,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 479,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 480,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 481,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 482,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 483,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 484,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 485,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 486,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 487,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 488,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 489,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 490,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 491,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 492,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 493,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 494,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444269,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 495,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444270,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 496,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444270,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 497,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444270,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 498,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444270,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 499,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444270,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 500,
+      "type": "status",
+      "replay": true,
+      "at": 1793862444270,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 870,
+      "type": "text",
+      "replay": false,
+      "at": 1793862444306,
+      "connection": 1
+    },
+    {
+      "kind": "server-emit",
+      "id": 870,
+      "type": "text",
+      "text": "RT_HEALTHY_1793862444301",
+      "at": 1793862444306
+    },
+    {
+      "kind": "server-emit",
+      "id": 871,
+      "type": "text",
+      "text": "RT_MISSED_1793862444436",
+      "at": 1793862444442
+    },
+    {
+      "kind": "sse-write",
+      "id": 872,
+      "type": "status",
+      "replay": false,
+      "at": 1793862444445,
+      "connection": 1
+    },
+    {
+      "kind": "server-emit",
+      "id": 872,
+      "type": "status",
+      "status": "waiting",
+      "at": 1793862444445
+    },
+    {
+      "kind": "sse-write",
+      "id": 1,
+      "type": "created",
+      "replay": true,
+      "at": 1793862450373,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 263,
+      "type": "user_message",
+      "replay": true,
+      "at": 1793862450373,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 265,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450373,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 266,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450373,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 267,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 268,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 269,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 270,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 271,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 272,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 273,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 274,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 275,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 276,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 277,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 278,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 279,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 280,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 281,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 282,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 283,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 284,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 285,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 286,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 287,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 288,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 289,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 290,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 291,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 292,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 293,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 294,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 295,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 296,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 297,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 298,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 299,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 300,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 301,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 302,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 303,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 304,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 305,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 306,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 307,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 308,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 309,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 310,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 311,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 312,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 313,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 314,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 315,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 316,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 317,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 318,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 319,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 320,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 321,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 322,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 323,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 324,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 325,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 326,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 327,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 328,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 329,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 330,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 331,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 332,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 333,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 334,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 335,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 336,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 337,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 338,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 339,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 340,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 341,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 342,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 343,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 344,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 345,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 346,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 347,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 348,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 349,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 350,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 351,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 352,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 353,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 354,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 355,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 356,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 357,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 358,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 359,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 360,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 361,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 362,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 363,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 364,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 365,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 366,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450374,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 367,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 368,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 369,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 370,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 371,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 372,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 373,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 374,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 375,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 376,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 377,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 378,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 379,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 380,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 381,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 382,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 383,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 384,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 385,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 386,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 387,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 388,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 389,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 390,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 391,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 392,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 393,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 394,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 395,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 396,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 397,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 398,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 399,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 400,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 401,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 402,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 403,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 404,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 405,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 406,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 407,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 408,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 409,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 410,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 411,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 412,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 413,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 414,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 415,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 416,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 417,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 418,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 419,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 420,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 421,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 422,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 423,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 424,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 425,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 426,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 427,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 428,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 429,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 430,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 431,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 432,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 433,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 434,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 435,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 436,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 437,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 438,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 439,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 440,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 441,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 442,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 443,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 444,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 445,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 446,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 447,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 448,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 449,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 450,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 451,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 452,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 453,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 454,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 455,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 456,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 457,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 458,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 459,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 460,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 461,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 462,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450375,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 463,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 464,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 465,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 466,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 467,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 468,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 469,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 470,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 471,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 472,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 473,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 474,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 475,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 476,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 477,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 478,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 479,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 480,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 481,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 482,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 483,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 484,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 485,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 486,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 487,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 488,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 489,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 490,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 491,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 492,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 493,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 494,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 495,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 496,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 497,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 498,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 499,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 500,
+      "type": "status",
+      "replay": true,
+      "at": 1793862450376,
+      "connection": 2
+    },
+    {
+      "kind": "server-emit",
+      "id": 873,
+      "type": "text",
+      "text": "RT_HALFOPEN_1793862451825",
+      "at": 1793862451829
+    },
+    {
+      "kind": "sse-write",
+      "id": 874,
+      "type": "status",
+      "replay": false,
+      "at": 1793862451837,
+      "connection": 2
+    },
+    {
+      "kind": "server-emit",
+      "id": 874,
+      "type": "status",
+      "status": "running",
+      "at": 1793862451837
+    },
+    {
+      "kind": "server-emit",
+      "id": 875,
+      "type": "text",
+      "text": "RT_RECONNECT_1793862458336",
+      "at": 1793862458642
+    },
+    {
+      "kind": "sse-write",
+      "id": 875,
+      "type": "text",
+      "replay": true,
+      "at": 1793862459854,
+      "connection": 4
+    },
+    {
+      "kind": "server-emit",
+      "id": 876,
+      "type": "text",
+      "text": "RT_CATCHUP_QUEUED_1793862461742",
+      "at": 1793862461742
+    },
+    {
+      "kind": "server-emit",
+      "id": 877,
+      "type": "text",
+      "text": "RT_REAL_TAB_1793862462568",
+      "at": 1793862462568
+    },
+    {
+      "kind": "sse-write",
+      "id": 878,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463863,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 878,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463864,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 878,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/0"
+        }
+      },
+      "at": 1793862463864
+    },
+    {
+      "kind": "sse-write",
+      "id": 879,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463864,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 879,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463864,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 879,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/1"
+        }
+      },
+      "at": 1793862463864
+    },
+    {
+      "kind": "sse-write",
+      "id": 880,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463864,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 880,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463864,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 880,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/2"
+        }
+      },
+      "at": 1793862463864
+    },
+    {
+      "kind": "sse-write",
+      "id": 881,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463864,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 881,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463864,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 881,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/3"
+        }
+      },
+      "at": 1793862463864
+    },
+    {
+      "kind": "sse-write",
+      "id": 882,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463864,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 882,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463864,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 882,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/4"
+        }
+      },
+      "at": 1793862463864
+    },
+    {
+      "kind": "sse-write",
+      "id": 883,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463864,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 883,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463864,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 883,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/5"
+        }
+      },
+      "at": 1793862463864
+    },
+    {
+      "kind": "sse-write",
+      "id": 884,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463864,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 884,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463864,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 884,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/6"
+        }
+      },
+      "at": 1793862463864
+    },
+    {
+      "kind": "sse-write",
+      "id": 885,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463864,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 885,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463864,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 885,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/7"
+        }
+      },
+      "at": 1793862463864
+    },
+    {
+      "kind": "sse-write",
+      "id": 886,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463864,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 886,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463864,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 886,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/8"
+        }
+      },
+      "at": 1793862463864
+    },
+    {
+      "kind": "sse-write",
+      "id": 887,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463864,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 887,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463864,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 887,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/9"
+        }
+      },
+      "at": 1793862463864
+    },
+    {
+      "kind": "sse-write",
+      "id": 888,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463864,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 888,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463864,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 888,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/10"
+        }
+      },
+      "at": 1793862463864
+    },
+    {
+      "kind": "sse-write",
+      "id": 889,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463865,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 889,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463865,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 889,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/11"
+        }
+      },
+      "at": 1793862463865
+    },
+    {
+      "kind": "sse-write",
+      "id": 890,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463865,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 890,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463865,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 890,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/12"
+        }
+      },
+      "at": 1793862463865
+    },
+    {
+      "kind": "sse-write",
+      "id": 891,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463865,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 891,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463865,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 891,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/13"
+        }
+      },
+      "at": 1793862463865
+    },
+    {
+      "kind": "sse-write",
+      "id": 892,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463865,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 892,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463865,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 892,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/14"
+        }
+      },
+      "at": 1793862463865
+    },
+    {
+      "kind": "sse-write",
+      "id": 893,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463865,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 893,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463865,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 893,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/15"
+        }
+      },
+      "at": 1793862463865
+    },
+    {
+      "kind": "sse-write",
+      "id": 894,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463865,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 894,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463865,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 894,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/16"
+        }
+      },
+      "at": 1793862463865
+    },
+    {
+      "kind": "sse-write",
+      "id": 895,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463865,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 895,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463865,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 895,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/17"
+        }
+      },
+      "at": 1793862463865
+    },
+    {
+      "kind": "sse-write",
+      "id": 896,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463865,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 896,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463865,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 896,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/18"
+        }
+      },
+      "at": 1793862463865
+    },
+    {
+      "kind": "sse-write",
+      "id": 897,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463865,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 897,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463865,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 897,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/19"
+        }
+      },
+      "at": 1793862463865
+    },
+    {
+      "kind": "sse-write",
+      "id": 898,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463865,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 898,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463865,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 898,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/20"
+        }
+      },
+      "at": 1793862463865
+    },
+    {
+      "kind": "sse-write",
+      "id": 899,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463865,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 899,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463865,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 899,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/21"
+        }
+      },
+      "at": 1793862463866
+    },
+    {
+      "kind": "sse-write",
+      "id": 900,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463866,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 900,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463866,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 900,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/22"
+        }
+      },
+      "at": 1793862463866
+    },
+    {
+      "kind": "sse-write",
+      "id": 901,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463866,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 901,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463866,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 901,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/23"
+        }
+      },
+      "at": 1793862463866
+    },
+    {
+      "kind": "sse-write",
+      "id": 902,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463866,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 902,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463866,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 902,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/24"
+        }
+      },
+      "at": 1793862463866
+    },
+    {
+      "kind": "sse-write",
+      "id": 903,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463866,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 903,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463866,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 903,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/25"
+        }
+      },
+      "at": 1793862463866
+    },
+    {
+      "kind": "sse-write",
+      "id": 904,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463866,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 904,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463866,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 904,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/26"
+        }
+      },
+      "at": 1793862463866
+    },
+    {
+      "kind": "sse-write",
+      "id": 905,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463866,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 905,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463866,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 905,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/27"
+        }
+      },
+      "at": 1793862463866
+    },
+    {
+      "kind": "sse-write",
+      "id": 906,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463866,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 906,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463866,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 906,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/28"
+        }
+      },
+      "at": 1793862463866
+    },
+    {
+      "kind": "sse-write",
+      "id": 907,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463866,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 907,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463866,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 907,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/29"
+        }
+      },
+      "at": 1793862463866
+    },
+    {
+      "kind": "sse-write",
+      "id": 908,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463874,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 908,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463874,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 908,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/30"
+        }
+      },
+      "at": 1793862463874
+    },
+    {
+      "kind": "sse-write",
+      "id": 909,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463875,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 909,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463875,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 909,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/31"
+        }
+      },
+      "at": 1793862463875
+    },
+    {
+      "kind": "sse-write",
+      "id": 910,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463875,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 910,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463875,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 910,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/32"
+        }
+      },
+      "at": 1793862463875
+    },
+    {
+      "kind": "sse-write",
+      "id": 911,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463875,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 911,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463875,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 911,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/33"
+        }
+      },
+      "at": 1793862463875
+    },
+    {
+      "kind": "sse-write",
+      "id": 912,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463875,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 912,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463875,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 912,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/34"
+        }
+      },
+      "at": 1793862463875
+    },
+    {
+      "kind": "sse-write",
+      "id": 913,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 913,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 913,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/35"
+        }
+      },
+      "at": 1793862463876
+    },
+    {
+      "kind": "sse-write",
+      "id": 914,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 914,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 914,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/36"
+        }
+      },
+      "at": 1793862463876
+    },
+    {
+      "kind": "sse-write",
+      "id": 915,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 915,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 915,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/37"
+        }
+      },
+      "at": 1793862463876
+    },
+    {
+      "kind": "sse-write",
+      "id": 916,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 916,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 916,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/38"
+        }
+      },
+      "at": 1793862463876
+    },
+    {
+      "kind": "sse-write",
+      "id": 917,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 917,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 917,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/39"
+        }
+      },
+      "at": 1793862463876
+    },
+    {
+      "kind": "sse-write",
+      "id": 918,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 918,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 918,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/40"
+        }
+      },
+      "at": 1793862463876
+    },
+    {
+      "kind": "sse-write",
+      "id": 919,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 919,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 919,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/41"
+        }
+      },
+      "at": 1793862463876
+    },
+    {
+      "kind": "sse-write",
+      "id": 920,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 920,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 920,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/42"
+        }
+      },
+      "at": 1793862463876
+    },
+    {
+      "kind": "sse-write",
+      "id": 921,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 921,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 921,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/43"
+        }
+      },
+      "at": 1793862463876
+    },
+    {
+      "kind": "sse-write",
+      "id": 922,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 922,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 922,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/44"
+        }
+      },
+      "at": 1793862463876
+    },
+    {
+      "kind": "sse-write",
+      "id": 923,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 923,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 923,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/45"
+        }
+      },
+      "at": 1793862463876
+    },
+    {
+      "kind": "sse-write",
+      "id": 924,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 924,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 924,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/46"
+        }
+      },
+      "at": 1793862463876
+    },
+    {
+      "kind": "sse-write",
+      "id": 925,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 925,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 925,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/47"
+        }
+      },
+      "at": 1793862463876
+    },
+    {
+      "kind": "sse-write",
+      "id": 926,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 926,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 926,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/48"
+        }
+      },
+      "at": 1793862463876
+    },
+    {
+      "kind": "sse-write",
+      "id": 927,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 927,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 927,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/49"
+        }
+      },
+      "at": 1793862463876
+    },
+    {
+      "kind": "sse-write",
+      "id": 928,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 928,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 928,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/50"
+        }
+      },
+      "at": 1793862463876
+    },
+    {
+      "kind": "sse-write",
+      "id": 929,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 929,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 929,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/51"
+        }
+      },
+      "at": 1793862463876
+    },
+    {
+      "kind": "sse-write",
+      "id": 930,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 930,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463876,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 930,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/52"
+        }
+      },
+      "at": 1793862463876
+    },
+    {
+      "kind": "sse-write",
+      "id": 931,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463877,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 931,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463877,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 931,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/53"
+        }
+      },
+      "at": 1793862463877
+    },
+    {
+      "kind": "sse-write",
+      "id": 932,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463877,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 932,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463877,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 932,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/54"
+        }
+      },
+      "at": 1793862463877
+    },
+    {
+      "kind": "sse-write",
+      "id": 933,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463877,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 933,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463877,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 933,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/55"
+        }
+      },
+      "at": 1793862463877
+    },
+    {
+      "kind": "sse-write",
+      "id": 934,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463877,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 934,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463877,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 934,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/56"
+        }
+      },
+      "at": 1793862463877
+    },
+    {
+      "kind": "sse-write",
+      "id": 935,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463877,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 935,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463877,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 935,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/57"
+        }
+      },
+      "at": 1793862463877
+    },
+    {
+      "kind": "sse-write",
+      "id": 936,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463877,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 936,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463877,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 936,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/58"
+        }
+      },
+      "at": 1793862463877
+    },
+    {
+      "kind": "sse-write",
+      "id": 937,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463877,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 937,
+      "type": "tool",
+      "replay": false,
+      "at": 1793862463877,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 937,
+      "type": "tool",
+      "text": {
+        "name": "Read",
+        "input": {
+          "file_path": "/fixture/59"
+        }
+      },
+      "at": 1793862463877
+    },
+    {
+      "kind": "sse-write",
+      "id": 938,
+      "type": "text",
+      "replay": false,
+      "at": 1793862464593,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 938,
+      "type": "text",
+      "replay": false,
+      "at": 1793862464593,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 938,
+      "type": "text",
+      "text": "RT_BOTTOM_CATCHUP_1793862464593",
+      "at": 1793862464593
+    },
+    {
+      "kind": "sse-write",
+      "id": 939,
+      "type": "text",
+      "replay": false,
+      "at": 1793862464730,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 939,
+      "type": "text",
+      "replay": false,
+      "at": 1793862464730,
+      "connection": 8
+    },
+    {
+      "kind": "server-emit",
+      "id": 939,
+      "type": "text",
+      "text": "RT_OLDER_CATCHUP_1793862464730",
+      "at": 1793862464730
+    },
+    {
+      "kind": "sse-write",
+      "id": 940,
+      "type": "user_message",
+      "replay": false,
+      "at": 1793862471537,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 941,
+      "type": "status",
+      "replay": false,
+      "at": 1793862471537,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 942,
+      "type": "status",
+      "replay": false,
+      "at": 1793862471538,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 943,
+      "type": "turn_started",
+      "replay": false,
+      "at": 1793862471560,
+      "connection": 8
+    },
+    {
+      "kind": "sse-write",
+      "id": 944,
+      "type": "status",
+      "replay": false,
+      "at": 1793862471561,
+      "connection": 8
+    }
+  ],
+  "pageErrors": [],
+  "pass": true
+}

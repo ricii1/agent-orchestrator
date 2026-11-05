@@ -8,6 +8,9 @@ pid, fd = pty.fork()
 if pid == 0:
     os.chdir(sys.argv[1])
     os.environ['TERM'] = 'xterm-256color'
+    os.environ['COLORTERM'] = 'truecolor'
+    # The daemon may run with NO_COLOR=1; its opt-out must not disable this PTY.
+    os.environ.pop('NO_COLOR', None)
     os.execv(sys.argv[2], [sys.argv[2], '-i'])
 
 def close(*_):

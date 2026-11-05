@@ -9,6 +9,7 @@ import { Engine } from '../src/engine.js';
 import { compileCron, Scheduler } from '../src/scheduler.js';
 import { allowedWorkspace, prepareWorkspace, git, merge, diff } from '../src/workspace.js';
 import { server } from '../src/server.js';
+import { openLocalDocument } from '../src/artifacts.js';
 import type { Adapter, RunContext } from '../src/types.js';
 const delay=()=>new Promise(r=>setTimeout(r,10));
 async function until(check:()=>boolean){for(let i=0;i<300;i++){if(check())return;await delay();}throw new Error('Timed out waiting for test state');}
@@ -98,7 +99,7 @@ test('scheduler skips missed minutes, prevents duplicate/overlapping runs, and h
 });
 
 test('dashboard works without a token, rejects foreign origins/hosts, and preserves internal capabilities and SSE replay',async t=>{
- const {engine,workspace}=await fixture(t);const scheduler=new Scheduler(engine);const {app}=server(engine,scheduler,workspace);
+ const {engine,workspace}=await fixture(t);const scheduler=new Scheduler(engine);const launched:string[][]=[];const {app}=server(engine,scheduler,workspace,undefined,{openLocal:(path,root,roots,tasks)=>openLocalDocument(path,root,roots,tasks,async argv=>{launched.push(argv);})});
  class Response extends Writable {
   statusCode=200; chunks:string[]=[]; raw:Buffer[]=[]; headers:Record<string,string>={};
   setHeader(k:string,v:string){this.headers[k]=v;}
@@ -119,6 +120,12 @@ test('dashboard works without a token, rejects foreign origins/hosts, and preser
  const preview=await finish(request('/api/previews?workspace='+encodeURIComponent(workspace)+'&path=preview.png'));
  assert.equal(preview.statusCode,200);assert.equal(preview.headers['content-type'],'image/png');assert.equal(preview.headers['cache-control'],'no-store');assert.deepEqual(Buffer.concat(preview.raw),image);
  assert.equal((await finish(request('/api/previews?workspace='+encodeURIComponent(workspace)+'&path=preview.png',{host:'evil.invalid'}))).statusCode,403);
+ const doc='docs/ux/realtime-integration/README.md';await mkdir(join(workspace,'docs/ux/realtime-integration'),{recursive:true});await writeFile(join(workspace,doc),'# Fixture document\n');
+ const exactArtifactPath=join(workspace,doc);assert.equal((await finish(request('/api/open-local',headers,'POST',{workspace,path:exactArtifactPath}))).statusCode,200);assert.deepEqual(launched,[[process.platform==='linux'?'xdg-open':process.platform==='darwin'?'open':'gio',...(process.platform==='win32'?['open']:[]),exactArtifactPath]]);
+ assert.equal((await finish(request('/api/open-local',{...headers,origin:'https://evil.invalid'},'POST',{workspace,path:exactArtifactPath}))).statusCode,403);
+ assert.equal((await finish(request('/api/open-local',{...headers,host:'evil.invalid'},'POST',{workspace,path:exactArtifactPath}))).statusCode,403);
+ assert.equal((await finish(request('/api/open-local',headers,'POST',{workspace,path:'missing.md'}))).statusCode,400);
+ const exactPreviewUrl='/api/previews?workspace='+encodeURIComponent(workspace)+'&path='+encodeURIComponent(exactArtifactPath);const direct=await finish(request(exactPreviewUrl));assert.equal(direct.statusCode,200);assert.match(direct.headers['content-type'],/text\/html/);assert.match(direct.chunks.join(''),/Buka di aplikasi lokal/);const docText=await finish(request('/api/document-text?workspace='+encodeURIComponent(workspace)+'&path='+encodeURIComponent(exactArtifactPath)));assert.equal(docText.chunks.join(''),'# Fixture document\n');
  const folderResponse=await finish(request('/api/folders',headers,'POST',{path:workspace}));
  assert.equal(folderResponse.statusCode,200);assert.equal(JSON.parse(folderResponse.chunks.join('')).path,workspace);
  assert.equal((await finish(request('/api/folders',{...headers,origin:'https://evil.invalid'},'POST',{path:workspace}))).statusCode,403);
