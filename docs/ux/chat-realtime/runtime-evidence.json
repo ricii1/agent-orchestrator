@@ -1,0 +1,173 @@
+{
+  "baseCommit": "91b73e5a0f10b8855d6d48ba6ecaa0260250c7af",
+  "fixture": true,
+  "providerInvoked": false,
+  "origin": "http://127.0.0.1:44435",
+  "scenarios": [
+    {
+      "scenario": "healthy SSE emit-receive-DOM",
+      "id": 2,
+      "emitAt": 1793853031868,
+      "receiveAt": 1793853031868,
+      "domAt": 1793853031884,
+      "emitToReceiveMs": 0,
+      "receiveToDomMs": 16,
+      "passed": true
+    },
+    {
+      "scenario": "missed text: state polling does not catch up transcript",
+      "textId": 3,
+      "statusId": 4,
+      "statusVisible": true,
+      "textVisible": false,
+      "waitMs": 5600,
+      "passed": true,
+      "reason": "the 5s refresh fetches /api/state; it does not call loadEvents or replay SSE"
+    },
+    {
+      "scenario": "manual reload still misses dropped text",
+      "textId": 3,
+      "latestNonTextId": 4,
+      "receivedOnReplay": true,
+      "textVisible": false,
+      "reloadStarted": 1793853037824,
+      "waitAfterReloadMs": 1400,
+      "passed": true,
+      "mechanism": "loadEvents seeds cache with non-text status id N; cacheEvent drops replay event id < N before checking whether that ID is already cached"
+    },
+    {
+      "scenario": "half-open plus hidden-visible",
+      "textId": 5,
+      "browserHidden": false,
+      "textVisible": false,
+      "connectionLabel": "Terhubung",
+      "waitAfterVisibleMs": 5600,
+      "passed": true,
+      "interpretation": "fixture reproduces no transcript catch-up while fetch reader remains open; visibility handler refreshes state only"
+    },
+    {
+      "scenario": "closed stream reconnect replay",
+      "textId": 7,
+      "domAt": 1793853047766,
+      "passed": true
+    }
+  ],
+  "events": [
+    {
+      "kind": "sse-write",
+      "id": 1,
+      "type": "created",
+      "replay": true,
+      "at": 1793853031801,
+      "connection": 1
+    },
+    {
+      "kind": "sse-write",
+      "id": 2,
+      "type": "text",
+      "replay": false,
+      "at": 1793853031868,
+      "connection": 1
+    },
+    {
+      "kind": "server-emit",
+      "id": 2,
+      "type": "text",
+      "text": "RT_HEALTHY_1793853031862",
+      "at": 1793853031868
+    },
+    {
+      "kind": "server-emit",
+      "id": 3,
+      "type": "text",
+      "text": "RT_MISSED_1793853032034",
+      "at": 1793853032044
+    },
+    {
+      "kind": "sse-write",
+      "id": 4,
+      "type": "status",
+      "replay": false,
+      "at": 1793853032051,
+      "connection": 1
+    },
+    {
+      "kind": "server-emit",
+      "id": 4,
+      "type": "status",
+      "status": "waiting",
+      "at": 1793853032051
+    },
+    {
+      "kind": "sse-write",
+      "id": 1,
+      "type": "created",
+      "replay": true,
+      "at": 1793853037950,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 2,
+      "type": "text",
+      "replay": true,
+      "at": 1793853037950,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 3,
+      "type": "text",
+      "replay": true,
+      "at": 1793853037950,
+      "connection": 2
+    },
+    {
+      "kind": "sse-write",
+      "id": 4,
+      "type": "status",
+      "replay": true,
+      "at": 1793853037950,
+      "connection": 2
+    },
+    {
+      "kind": "server-emit",
+      "id": 5,
+      "type": "text",
+      "text": "RT_HALFOPEN_1793853039486",
+      "at": 1793853039492
+    },
+    {
+      "kind": "sse-write",
+      "id": 6,
+      "type": "status",
+      "replay": false,
+      "at": 1793853039505,
+      "connection": 2
+    },
+    {
+      "kind": "server-emit",
+      "id": 6,
+      "type": "status",
+      "status": "running",
+      "at": 1793853039506
+    },
+    {
+      "kind": "sse-write",
+      "id": 7,
+      "type": "text",
+      "replay": false,
+      "at": 1793853047753,
+      "connection": 3
+    },
+    {
+      "kind": "server-emit",
+      "id": 7,
+      "type": "text",
+      "text": "RT_RECONNECT_1793853046043",
+      "at": 1793853047753
+    }
+  ],
+  "pageErrors": [],
+  "pass": true
+}

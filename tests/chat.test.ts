@@ -20,6 +20,8 @@ test('worker transcript keeps instructions, activity and replies without duplica
   assert.equal(chatEntries(worker,[]).at(-1)?.text,'Saved result');
   const live={...worker,id:'live',status:'running' as const};
   assert.deepEqual(workerChats([worker,{...worker,id:'other',workspace:'/other'},live],'/project').map(t=>t.id),['live',worker.id]);
+  const parent={...worker,id:'pm',kind:'pm' as const,parentId:null};
+  assert.ok(workerChats([parent,{...worker,workspace:'/project/.git'}],'/project').some(t=>t.id===worker.id));
  }finally{store.close();}
 });
 
@@ -31,5 +33,19 @@ test('transcript history pages preserve task scope, ordering and exclude text de
   const all=[...first,...older,...latest];
   assert.equal(all.length,620);assert.deepEqual(all.map(e=>(e.data as any).text),Array.from({length:620},(_,n)=>String(n)));
   assert.ok(all.every(e=>e.taskId==='worker'&&e.type==='message'));
+ }finally{store.close();}
+});
+
+test('transcript deltas coalesce per turn and a completed message supersedes its deltas once',()=>{
+ const store=new Store(':memory:');
+ try{
+  const task=store.createTask({prompt:'Start',workspace:'/project',provider:'codex',kind:'pm'});
+  const record=(type:string,text:string)=>store.event(task.id,type,{text});
+  record('created','Start');record('turn_started','');record('text','partial ');record('text','answer');record('message','partial answer');
+  record('user_message','Next');record('turn_started','Next');record('text','second turn');
+  const messages=chatEntries(task,store.events(0,task.id)).filter(e=>e.kind==='message').map(e=>e.text);
+  assert.deepEqual(messages,['Start','partial answer','Next','second turn']);
+  const live=chatEntries(task,store.events(0,task.id).filter(e=>e.type!=='message')).filter(e=>e.kind==='message');
+  assert.deepEqual(live.map(e=>e.text),['Start','partial answer','Next','second turn']);
  }finally{store.close();}
 });

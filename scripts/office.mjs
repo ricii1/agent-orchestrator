@@ -19,7 +19,7 @@ function daemon(){
 }
 async function serviceActive(){try{await exec('systemctl',['--user','is-active','--quiet','agent-office.service'],{timeout:3000});return true;}catch{return false;}}
 async function state(){try{const r=await fetch(url+'/api/state',{signal:AbortSignal.timeout(2000)});if(!r.ok)throw new Error(`API ${r.status}`);return await r.json();}catch{return null;}}
-async function idle(){const snapshot=await state();if(!snapshot)throw new Error('Daemon berjalan tetapi statusnya tidak dapat dibaca. Hentikan dari terminal asal sebelum mencoba lagi.');if(snapshot.tasks.some(t=>['running','waiting','queued'].includes(t.status)))throw new Error('Masih ada pekerjaan aktif. Selesaikan atau hentikan melalui UI sebelum restart.');}
+async function idle(){const snapshot=await state();if(!snapshot)throw new Error('Daemon berjalan tetapi statusnya tidak dapat dibaca. Hentikan dari terminal asal sebelum mencoba lagi.');if(snapshot.terminals?.some(t=>t.exitCode===null))throw new Error('Masih ada terminal aktif. Pilih Hentikan terminal sebelum restart.');if(snapshot.tasks.some(t=>['running','waiting','queued'].includes(t.status)))throw new Error('Masih ada pekerjaan aktif. Selesaikan atau hentikan melalui UI sebelum restart.');}
 async function stop(){
   const pid=daemon();if(!pid)return;
   await idle();

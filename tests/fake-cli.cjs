@@ -15,15 +15,18 @@ if(process.argv.includes('app-server')){
    if(q.method==='config/read')send({id:q.id,result:{config:{mcp_servers:{inherited:{command:'unexpected'}}}}});
    if(q.method==='thread/start'||q.method==='thread/resume'){
     if(q.params.config.mcp_servers.inherited.enabled!==false)process.exit(4);
-    if(q.params.approvalPolicy!=='untrusted'||q.params.config.features.multi_agent!==false)process.exit(3);
+    if(process.env.OFFICE_TEST_FULL==='1'){if(q.params.approvalPolicy!=='never'||q.params.sandbox!=='danger-full-access')process.exit(5);}else if(q.params.approvalPolicy!=='untrusted')process.exit(3);
+    if(q.params.config.features.multi_agent!==false)process.exit(3);
     send({id:q.id,result:{thread:{id:'fake-thread'},model:'fake'}});
    }
+   if(q.method==='thread/compact/start'){send({id:q.id,result:{}});send({method:'item/started',params:{item:{type:'contextCompaction'}}});send({method:'turn/completed',params:{turn:{status:'completed'}}});}
    if(q.method==='turn/start'){send({id:q.id,result:{turn:{id:'fake-turn'}}});send({id:1000,method:'item/commandExecution/requestApproval',params:{command:'echo test',threadId:'fake-thread',turnId:'fake-turn'}});}
    if(q.id===1000&&q.result){send({method:'item/commandExecution/outputDelta',params:{itemId:'cmd-1',delta:'test output'}});send({method:'item/completed',params:{item:{id:'cmd-1',type:'commandExecution',aggregatedOutput:'test output',exitCode:0}}});send({method:'item/completed',params:{item:{type:'agentMessage',text:'permission '+q.result.decision}}});send({method:'turn/completed',params:{turn:{status:'completed'}}});}
   }
  }
 }else{
- if(!process.argv.includes('--restricted')||!process.argv.includes('--permission-prompt-tool'))process.exit(3);
+ if(process.env.OFFICE_TEST_FULL==='1'){const settings=JSON.parse(process.argv[process.argv.indexOf('--settings')+1]);if(!process.argv.includes('--dangerously-skip-permissions')||process.argv.includes('--restricted')||settings.sandbox.enabled!==false||!process.argv.includes('bypassPermissions'))process.exit(5);}else if(!process.argv.includes('--restricted'))process.exit(3);
+ if(!process.argv.includes('--permission-prompt-tool'))process.exit(3);
  const prompt=fs.readFileSync(0,'utf8');
  send({type:'system',session_id:'fake-session'});send({type:'assistant',message:{content:[{type:'tool_use',id:'tool-1',name:'Read',input:{file_path:'/tmp/test'}}]}});send({type:'user',message:{content:[{type:'tool_result',tool_use_id:'tool-1',content:'file contents'}]}});send({type:'assistant',message:{content:[{type:'text',text:'received '+prompt}]}});send({type:'result',subtype:'success',is_error:false,result:'received '+prompt,usage:{input_tokens:1,output_tokens:1}});
 }

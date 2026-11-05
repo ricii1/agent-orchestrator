@@ -52,6 +52,10 @@ export class Store {
       :this.db.prepare("SELECT * FROM events WHERE taskId=? AND type!='text' AND id<? ORDER BY id DESC LIMIT ?").all(taskId,before,limit)) as any[];
     return rows.reverse().map(row=>({...row,data:JSON.parse(row.data)}));
   }
+  syncCursor(taskId:string):number {
+    const row=this.db.prepare("SELECT MAX(id) AS id FROM events WHERE taskId=? AND type IN ('created','user_message','turn_started','message')").get(taskId) as {id:number|null}|undefined;
+    return row?.id||0;
+  }
   saveApproval(value: Approval) { this.db.prepare('INSERT OR REPLACE INTO approvals VALUES (?, ?)').run(value.id, JSON.stringify(value)); }
   approvals() { return this.all<Approval>('approvals'); }
   saveSchedule(value: Schedule) { this.db.prepare('INSERT OR REPLACE INTO schedules VALUES (?, ?)').run(value.id, JSON.stringify(value)); }

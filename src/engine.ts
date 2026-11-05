@@ -1,37 +1,63 @@
+import {isEmptyFormRequest} from './elicitation.js';
+import {selectedChoice,savedClaudeRules,approvalChoices} from './approval-options.js';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { EventEmitter } from 'node:events';
 import { Store } from './store.js';
-import { active, type Adapter, type AgentRun, type Approval, type Provider, type Task } from './types.js';
+import { matchesPM, sameWorkspaceAgents, workspaceAgents, active, type WorkspaceAgents, type Adapter, type AgentRun, type Approval, type Provider, type Task } from './types.js';
 import { allowedWorkspace, contains, prepareWorkspace } from './workspace.js';
+const overlaps=(a:string,b:string)=>contains(a,b)||contains(b,a);
+function writeConflict(a:Task,b:Task) {
+  if(!a.parentId&&!b.parentId) return overlaps(a.workspace,b.workspace);
+  if(a.parentId&&b.parentId) return !a.branch&&!b.branch&&overlaps(a.executionPath||a.workspace,b.executionPath||b.workspace);
+  const pm=a.parentId?b:a,worker=a.parentId?a:b;
+  return worker.parentId!==pm.id&&!worker.branch&&overlaps(pm.workspace,worker.executionPath||worker.workspace);
+}
 export class Engine extends EventEmitter {
   running = new Map<string, { run?: AgentRun; done?: Promise<void>; capability: string }>();
-  approvals = new Map<string, (value: { approved: boolean; answer: string })=>void>();
+  approvals = new Map<string, (value: { approved: boolean; answer: string; choice?:string })=>void>();
   draining = false; closing = false; lockedTasks = new Set<string>();
   constructor(public store: Store, public adapters: Record<Provider, Adapter>, public dataDir: string, public url: string) { super(); }
   event(taskId: string | null, type: string, data: unknown) { const event = this.store.event(taskId,type,data); this.emit('event',event); return event; }
   changed(task: Task) { this.store.saveTask(task); this.event(task.id,'status', { status: task.status, error: task.error }); }
-  async create(input: { prompt: string; workspace: string; provider?: Provider; model?: string; title?: string; parentId?: string; scheduleId?: string; kind?: 'pm'; role?: string }) {
+  async create(input: { prompt: string; workspace: string; provider?: Provider; model?: string; title?: string; parentId?: string; scheduleId?: string; kind?: 'pm'; role?: string; expectedAgents?: WorkspaceAgents }) {
     if (this.closing) throw new Error('Daemon is shutting down');
     if (!input.prompt?.trim() || input.prompt.length > 100000) throw new Error('Prompt must contain 1–100000 characters');
     if (input.provider && !['claude','codex'].includes(input.provider)) throw new Error('Invalid provider');
+    const workspace = await allowedWorkspace(input.workspace, this.store.settings().roots);
+    // Re-read after filesystem awaits: settings may have changed while admitting this task.
     const settings = this.store.settings();
-    const workspace = await allowedWorkspace(input.workspace, settings.roots);
+    if(this.closing) throw new Error('Daemon is shutting down');
+    if(!settings.roots.some(root=>contains(root,workspace))) throw new Error('Workspace is no longer registered');
     if(input.role!==undefined&&(typeof input.role!=='string'||input.role.length>80)) throw new Error('Freelancer role must be at most 80 characters');
     if(input.kind==='pm'&&input.parentId) throw new Error('PM cannot be a worker');
     if (input.parentId && this.store.task(input.parentId).parentId) throw new Error('Workers cannot spawn');
-    const provider = input.provider || (input.parentId ? settings.workerProvider : settings.coordinatorProvider);
-    const task = this.store.createTask({ ...input, workspace, provider, model: input.model || (provider === 'claude' ? settings.claudeModel : settings.codexModel) });
+    if(input.expectedAgents&&!sameWorkspaceAgents(input.expectedAgents,workspaceAgents(settings,workspace))) throw new Error('Workspace agents changed. Reload before sending.');
+    const parent=input.parentId?this.store.task(input.parentId):undefined;
+    if(parent&&['cancelled','interrupted','failed'].includes(parent.status)) throw new Error('Parent must be resumed before spawning workers');
+    const defaults=parent ? parent.workerDefaults || workspaceAgents(settings,parent.workspace) : workspaceAgents(settings,workspace);
+    const provider = input.provider || (parent ? defaults.workerProvider : defaults.coordinatorProvider);
+    // Scheduled provider/model semantics stay explicit; empty scheduled models retain global fallback.
+    const models=input.scheduleId?settings:defaults;
+    const {expectedAgents:_,...taskInput}=input;
+    const defaultModel=provider==='claude'?models.claudeModel:models.codexModel;
+    const model=input.scheduleId ? input.model || defaultModel : input.model ?? defaultModel;
+    const task = this.store.createTask({ ...taskInput, workspace, provider, model, ...(!parent?{workerDefaults:defaults}:{}) });
     this.store.enqueue(task.id, input.prompt); this.event(task.id,'created',task); void this.drain(); return task;
   }
   private pmMessages: Promise<unknown> = Promise.resolve();
-  async messagePM(workspace: string, text: string): Promise<Task> {
-    // Serialize creation so two first messages cannot create two PMs for one workspace/provider.
+  async messagePM(workspace: string, text: string, expected?:WorkspaceAgents): Promise<Task> {
+    // Serialize only admission, never agent execution, to deduplicate initial messages.
     const result=this.pmMessages.then(async()=> {
       const settings=this.store.settings();
       const actual=await allowedWorkspace(workspace,settings.roots);
-      const pm=this.store.tasks().find(t=>t.kind==='pm'&&t.workspace===actual&&t.provider===settings.coordinatorProvider);
+      const defaults=workspaceAgents(this.store.settings(),actual);
+      if(expected&&!sameWorkspaceAgents(expected,defaults)) throw new Error('Workspace agents changed. Reload before sending.');
+      const pm=this.store.tasks().find(t=>matchesPM(t,actual,defaults));
+      const input=text.trim();
+      if(input==='/compact'){if(!pm)throw new Error('Mulai percakapan terlebih dahulu.');await this.compact(pm.id);return this.store.task(pm.id);}
+      if(input.startsWith('/')||input.startsWith('!'))throw new Error('Gunakan /help atau Terminal untuk perintah ini.');
       if(pm) { await this.message(pm.id,text);return this.store.task(pm.id); }
-      return this.create({prompt:text,title:'PM',workspace:actual,kind:'pm',provider:settings.coordinatorProvider});
+      return this.create({prompt:text,title:'PM',workspace:actual,kind:'pm',expectedAgents:defaults,provider:defaults.coordinatorProvider,model:defaults.coordinatorProvider==='claude'?defaults.claudeModel:defaults.codexModel});
     });
     this.pmMessages=result.catch(()=>{});return result;
   }
@@ -43,6 +69,33 @@ export class Engine extends EventEmitter {
     this.store.enqueue(id,text); this.event(id,'user_message',{ text });
     if (!this.running.has(id)) { task.status='queued'; this.changed(task); }
     void this.drain();
+  }
+  async compact(id:string){
+    const task=this.store.task(id);
+    if(this.closing||this.running.has(id)||this.lockedTasks.has(id)||this.store.pending(id).length)throw new Error('Tunggu giliran agent selesai sebelum /compact.');
+    if([...this.running.keys()].some(other=>writeConflict(task,this.store.task(other))))throw new Error('Tunggu agent workspace yang tumpang tindih selesai sebelum /compact.');
+    if(!task.sessionId)throw new Error('Belum ada sesi untuk diringkas. Mulai percakapan terlebih dahulu.');
+    if(['failed','interrupted','cancelled'].includes(task.status))throw new Error('Lanjutkan sesi sebelum /compact.');
+    const previous=task.status;
+    const entry:{run?:AgentRun;done?:Promise<void>;capability:string}={capability:randomBytes(32).toString('hex')};
+    this.running.set(id,entry);task.status='running';this.changed(task);
+    this.event(id,'command_started',{command:'/compact'});
+    entry.done=(async()=>{
+      try{
+        await allowedWorkspace(task.workspace,this.store.settings().roots);
+        entry.run=this.adapters[task.provider].run({task,permissionMode:this.store.settings().permissions?.[task.provider]||'manual',prompt:'/compact',compact:true,url:this.url,bridge:this.bridge,capability:entry.capability,
+          permissionRules:task.provider==='claude'?savedClaudeRules(this.store.approvals(),this.store.tasks(),task):undefined,
+          event:(type,data)=>this.event(id,type,data),session:sessionId=>{const t=this.store.task(id);t.sessionId=sessionId;this.store.saveTask(t);},approve:(kind,details)=>this.approve(id,kind,details)});
+        const result=await entry.run.done;
+        this.event(id,'command_result',{command:'/compact',success:true,text:result||'Konteks berhasil diringkas.'});
+      }catch(error){this.event(id,'command_result',{command:'/compact',success:false,text:String(error)});}
+      finally{
+        this.expireApprovals(id);this.running.delete(id);
+        const current=this.store.task(id);
+        if(current.status!=='cancelled'&&!this.closing){current.status=this.store.pending(id).length?'queued':previous;this.changed(current);}
+        void this.drain();
+      }
+    })();
   }
   async resume(id: string, prompt = 'Resume after interruption. Review the activity log and current files before continuing; avoid repeating external side effects.') {
     const task = this.store.task(id);
@@ -57,11 +110,9 @@ export class Engine extends EventEmitter {
       for (const task of this.store.tasks().filter(t=>t.status==='queued')) {
         if (this.running.has(task.id) || this.lockedTasks.has(task.id)) continue;
         const inFlight = [...this.running.keys()].map(id=>this.store.task(id));
-        if (!task.parentId && inFlight.some(t=>!t.parentId)) continue;
+        // Independent PM roots and Git worktrees can run together; overlapping writers wait.
+        if(inFlight.some(other=>writeConflict(task,other))) continue;
         if (task.parentId && inFlight.filter(t=>t.parentId).length >= this.store.settings().maxWorkers) continue;
-        // Git workers get independent worktrees. Non-Git writers lock overlapping directories.
-        const workspace = task.executionPath || task.workspace;
-        if (task.parentId && !task.branch && inFlight.some(t=>t.parentId && !t.branch && (contains(t.executionPath || t.workspace, workspace) || contains(workspace,t.executionPath || t.workspace)))) continue;
         this.running.set(task.id, { capability: randomBytes(32).toString('hex') });
         task.status='running'; this.changed(task);
         this.running.get(task.id)!.done=this.execute(task.id);
@@ -82,7 +133,7 @@ export class Engine extends EventEmitter {
       const prompt = queued.map(m=>m.text).join('\n\n');
       this.store.consume(queued.map(m=>m.id)); this.event(id,'turn_started',{ text: prompt });
       const entry = this.running.get(id)!;
-      const run = this.adapters[task.provider].run({ task, prompt: prompt || 'Continue the assigned task.', url: this.url, capability: entry.capability, bridge: this.bridge,
+      const run = this.adapters[task.provider].run({ task, permissionMode:this.store.settings().permissions?.[task.provider]||'manual', permissionRules:task.provider==='claude'?savedClaudeRules(this.store.approvals(),this.store.tasks(),task):undefined, prompt: prompt || 'Continue the assigned task.', url: this.url, capability: entry.capability, bridge: this.bridge,
         event: (type,data)=>this.event(id,type,data),
         session: sessionId=> { const current=this.store.task(id); current.sessionId=sessionId; this.store.saveTask(current); },
         approve: (kind,details)=>this.approve(id,kind,details),
@@ -111,20 +162,43 @@ export class Engine extends EventEmitter {
     if (['cancelled','interrupted','failed'].includes(parent.status)) return;
     if (!this.running.has(parent.id)) { parent.status='queued'; this.changed(parent); }
   }
-  approve(taskId: string, kind: string, details: unknown): Promise<{ approved: boolean; answer: string }> {
+  private automaticPermission(taskId:string,kind:string,details:unknown){
+    if(!['auto','full'].includes(this.store.settings().permissions?.[this.store.task(taskId).provider]||'manual'))return false;
+    if(['permission','item/commandExecution/requestApproval','item/fileChange/requestApproval','unsupported_permissions'].includes(kind))return true;
+    const data=details as any;
+    return kind==='elicitation'&&isEmptyFormRequest(details)&&data?._meta?.codex_approval_kind==='mcp_tool_call';
+  }
+  applyPermissionSettings(){
+    for(const a of this.store.approvals().filter(a=>a.status==='pending')){
+      if(this.approvals.has(a.id)&&this.automaticPermission(a.taskId,a.kind,a.details))this.answerAutomatic(a);
+    }
+  }
+  private answerAutomatic(a:Approval){
+    const choices=approvalChoices(a.kind,a.details);
+    const once=choices.find(c=>c.value==='accept'||c.id==='claude:once');
+    const approved=a.kind==='elicitation'||!!once;
+    this.answer(a.id,approved,approved?'Disetujui otomatis sesuai pengaturan provider.':'Provider tidak menawarkan izin sekali.',once?.id,true);
+  }
+  approve(taskId: string, kind: string, details: unknown): Promise<{ approved: boolean; answer: string; choice?:string }> {
     if (this.closing || !this.running.has(taskId)) return Promise.resolve({ approved:false,answer:'Task is no longer running' });
     const approval: Approval={ id:randomUUID(),taskId,kind,details,status:'pending',answer:'',createdAt:new Date().toISOString() };
+    if(this.automaticPermission(taskId,kind,details)){
+      this.store.saveApproval(approval);
+      return new Promise(resolve=>{this.approvals.set(approval.id,resolve);this.answerAutomatic(approval);});
+    }
     this.store.saveApproval(approval); const task=this.store.task(taskId); task.status='waiting'; this.changed(task); this.event(taskId,'approval',approval);
     return new Promise(resolve=>this.approvals.set(approval.id,resolve));
   }
-  answer(id: string, approved: boolean, answer: string) {
+  answer(id: string, approved: boolean, answer: string, choice?:string, automatic=false) {
     const a=this.store.approvals().find(a=>a.id===id);
     const resolve=this.approvals.get(id);
     if (!a || a.status!=='pending' || !resolve) throw new Error('Approval has expired or was already answered');
+    if(choice!==undefined)selectedChoice(a.kind,a.details,choice,approved);
+    a.choice=choice;if(automatic)a.automatic=true;
     a.status=approved ? 'approved':'denied'; a.answer=answer; this.store.saveApproval(a); this.approvals.delete(id);
     const task=this.store.task(a.taskId);
     if (this.running.has(task.id) && !this.store.approvals().some(x=>x.taskId===task.id && x.status==='pending')) { task.status='running'; this.changed(task); }
-    this.event(task.id,'approval_resolved',a); resolve({approved,answer});
+    this.event(task.id,'approval_resolved',a); resolve({approved,answer,...(choice!==undefined?{choice}:{})});
   }
   expireApprovals(taskId: string) {
     for (const a of this.store.approvals().filter(a=>a.taskId===taskId && a.status==='pending')) {
@@ -152,7 +226,8 @@ export class Engine extends EventEmitter {
     if(name==='approve') {
       const response=await this.approve(task.id,'permission',args);
       const input=args.input || args.tool_input || {};
-      return response.approved ? { behavior:'allow', updatedInput:input } : { behavior:'deny', message:response.answer || 'Denied by user' };
+      const choice=response.choice?selectedChoice('permission',args,response.choice,response.approved):undefined;
+      return response.approved ? { behavior:'allow', updatedInput:input,...(Array.isArray(choice?.value)?{updatedPermissions:choice.value}:{}) } : { behavior:'deny', message:response.answer || 'Denied by user' };
     }
     if(task.parentId) throw new Error('Workers cannot delegate or control other agents');
     if(name==='spawn_task') return this.create({ prompt:args.prompt,title:args.title,workspace:args.workspace || task.workspace,provider:args.provider,model:args.model,role:args.role,parentId:task.id });

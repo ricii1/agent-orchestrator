@@ -1,0 +1,80 @@
+{
+  "scope": "local source integration only; live app not activated",
+  "preview": {
+    "unitAndBrowser": "pass",
+    "browserChecks": 6,
+    "absoluteOfficeScreenshot": {
+      "status": 200,
+      "mime": "image/png",
+      "naturalWidth": 1425,
+      "naturalHeight": 1768
+    },
+    "relativeLink": "pass",
+    "keyboardEnter": "pass",
+    "missingAndSymlinkEscape": "pass",
+    "unsafeSchemesAndCodeBlocks": "pass",
+    "pageErrors": 0
+  },
+  "regressions": {
+    "fullTestSuite": {
+      "passed": 64,
+      "failed": 0
+    },
+    "officeExpanded": {
+      "checksPassed": 7,
+      "viewports": [
+        1440,
+        390,
+        320
+      ],
+      "overflow": false
+    },
+    "reviewHighlight": {
+      "count": 2,
+      "statusTransitionCount": 1,
+      "viewports": [
+        1440,
+        320
+      ],
+      "width320": 305,
+      "overflow": false
+    },
+    "agentWorkspaceToolbarControl": "present in app source and captured desktop toolbar",
+    "terminalTheme": {
+      "fontFamily": "monospace",
+      "fontSize": 13,
+      "ansiColors": "ANSI 0-15 custom; 16-255 and RGB preserved",
+      "retryControl": "present"
+    }
+  },
+  "builds": {
+    "backendTypeScript": "pass; output /tmp",
+    "vite": "pass; output /tmp"
+  },
+  "fullTestSuite": {
+    "passed": 64,
+    "failed": 0,
+    "cancelled": 0,
+    "skipped": 0
+  },
+  "securityReview": {
+    "executionPathCanonicalTarget": "must remain within selected current registered root",
+    "privateDataPaths": ".data/.git/.env and sensitive segments blocked"
+  },
+  "realtimeChat": {
+    "report": "../chat-realtime/ANALYSIS.md",
+    "artifacts": "docs/ux/chat-realtime/",
+    "copiedScope": "docs-only analysis, harness, JSON evidence, screenshots",
+    "credentialAndPrivatePayloadScan": "no findings",
+    "scenarios": [
+      "healthy SSE receive-to-DOM: 16 ms fixture measurement",
+      "state poll does not catch up missed text",
+      "replayed text rejected behind higher cached non-text ID",
+      "half-open stream remains stale; hidden/visible stimulus synthetic",
+      "closed-stream reconnect replay recovers"
+    ],
+    "userIncidentRootCause": "unproven",
+    "fixStatus": "not included in preview integration; separately authorized worktree task is handling it",
+    "sourceChangedHere": false
+  }
+}

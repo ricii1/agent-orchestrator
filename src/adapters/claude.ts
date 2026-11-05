@@ -3,14 +3,15 @@ import { child, lines, stop } from './process.js';
 export class ClaudeAdapter implements Adapter {
   run(ctx: RunContext) {
     const coordinator = !ctx.task.parentId;
+    const full=ctx.permissionMode==='full';
     const config = { mcpServers: { orchestrator: { command: process.execPath, args: [ctx.bridge], env: { ORCHESTRATOR_URL: ctx.url, ORCHESTRATOR_CAPABILITY: ctx.capability, ORCHESTRATOR_ROLE: coordinator ? 'coordinator' : 'worker' } } } };
     const settings = {
-      permissions: { ask: ['Bash(*)','WebFetch','WebSearch'], deny: ['Agent','Task'], defaultMode: 'default' },
-      sandbox: { enabled: true, autoAllowBashIfSandboxed: false, allowUnsandboxedCommands: false },
+      permissions: { allow:ctx.permissionRules||[], deny: ['Agent','Task'], defaultMode: full?'bypassPermissions':'default' },
+      sandbox: { enabled: !full, autoAllowBashIfSandboxed: false, allowUnsandboxedCommands: full },
     };
     const args = ['-p', '--output-format','stream-json','--verbose','--include-partial-messages',
-      '--restricted', '--setting-sources','', '--strict-mcp-config', '--mcp-config',JSON.stringify(config),
-      '--settings',JSON.stringify(settings), '--permission-mode','default',
+      ...(full?['--dangerously-skip-permissions']:['--restricted']), '--setting-sources','', '--strict-mcp-config', '--mcp-config',JSON.stringify(config),
+      '--settings',JSON.stringify(settings), '--permission-mode',full?'bypassPermissions':'default',
       '--permission-prompt-tool','mcp__orchestrator__approve',
       '--tools', coordinator ? 'Read,Glob,Grep,WebFetch,WebSearch' : 'Read,Glob,Grep,Edit,Write,Bash,WebFetch,WebSearch',
       '--disallowedTools','Agent,Task', '--append-system-prompt', instructions(coordinator)];

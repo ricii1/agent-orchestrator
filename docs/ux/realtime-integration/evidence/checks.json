@@ -1,0 +1,76 @@
+{
+  "source": "Local static build, Chrome headless, fake API data; no provider/model invoked",
+  "viewports": [
+    1440,
+    390,
+    320
+  ],
+  "measurements": [
+    {
+      "mode": "chat-first",
+      "viewport": 1440,
+      "canvas": {
+        "width": 342,
+        "height": 199.5
+      }
+    },
+    {
+      "mode": "expanded",
+      "viewport": 1440,
+      "canvas": {
+        "width": 1163,
+        "height": 678.40625
+      },
+      "conversationScrollTop": 300
+    },
+    {
+      "mode": "expanded",
+      "viewport": 390,
+      "canvas": {
+        "width": 364,
+        "height": 212.328125
+      },
+      "documentWidth": 390
+    },
+    {
+      "mode": "expanded",
+      "viewport": 320,
+      "canvas": {
+        "width": 294,
+        "height": 171.5
+      },
+      "documentWidth": 320
+    }
+  ],
+  "checks": [
+    {
+      "name": "Desktop 1440: chat-first canvas aspect and size",
+      "status": "pass"
+    },
+    {
+      "name": "Expanded desktop: canvas grows while conversation, log scroll and draft remain",
+      "status": "pass"
+    },
+    {
+      "name": "Worker selection, status, session and pending approval remain accessible",
+      "status": "pass"
+    },
+    {
+      "name": "Switch workspace preserves workspace-specific PM draft",
+      "status": "pass"
+    },
+    {
+      "name": "Escape returns to conversation and keeps focus on mode control",
+      "status": "pass"
+    },
+    {
+      "name": "Mobile 390: expanded canvas, conversation and chat-first fallback",
+      "status": "pass"
+    },
+    {
+      "name": "Mobile 320: expanded canvas, conversation and chat-first fallback",
+      "status": "pass"
+    }
+  ],
+  "pageErrors": []
+}

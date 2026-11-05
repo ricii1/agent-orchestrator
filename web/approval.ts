@@ -33,3 +33,21 @@ export function approvalView(approval:Approval):ApprovalView {
   }
   return {...base,title:tool?`Izinkan ${tool}?`:base.title,preview:Object.keys(input).length?JSON.stringify(input,null,2):undefined};
 }
+
+// Preview only: never fills or submits an answer, and never replaces server validation.
+export function formExample(schema:unknown,depth=0):unknown {
+  if(depth>4)return undefined;
+  const s=record(schema);
+  if(s.default!==undefined)return s.default;
+  if(Array.isArray(s.examples)&&s.examples.length)return s.examples[0];
+  if(Array.isArray(s.enum)&&s.enum.length)return s.enum[0];
+  if(s.type==='object'&&s.properties&&typeof s.properties==='object'){
+    return Object.fromEntries(Object.entries(record(s.properties)).slice(0,20).flatMap(([key,value])=>{const example=formExample(value,depth+1);return example===undefined?[]:[[key,example]];}));
+  }
+  if(s.type==='string')return '…';
+  if(s.type==='integer'||s.type==='number')return 0;
+  if(s.type==='boolean')return false;
+  if(s.type==='array')return [];
+  if(s.type==='null')return null;
+  return undefined;
+}

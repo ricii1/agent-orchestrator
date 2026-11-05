@@ -1,0 +1,14 @@
+<!doctype html><html lang="id"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Terminal PTY retest</title><link rel="stylesheet" href="/web/style.css"><body style="padding:16px;background:#f7f6f1"><main><h1>QA terminal terisolasi</h1><p>PTY zsh fixture · tidak terhubung ke kantor live</p></main><script type="module">
+import {TerminalPanel} from '/web/terminal.ts';
+window.inputs=[];window.errors=[];
+const api=async(path,method,body)=>{
+ if(method==='POST'){
+  if(body.action==='input')window.inputs.push(body.data);
+  const endpoint=path==='terminals'?'/api/terminals':'/api/terminals/fixture';
+  const r=await fetch(endpoint,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});return r.json();
+ }
+ const r=await fetch('/api/terminals/fixture'+(path.includes('?')?path.slice(path.indexOf('?')):''));return r.json();
+};
+window.panel=new TerminalPanel('/isolated/zsh-qa',api,e=>errors.push(String(e)));
+try{await panel.show();window.ready=true;}catch(e){window.initError=String(e);errors.push(window.initError);window.ready=true;}
+</script></body></html>

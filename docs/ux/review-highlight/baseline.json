@@ -1,0 +1,13 @@
+{
+  "capturedAt": "2026-11-05 (observed during this task before edits)",
+  "scope": "Review count, attention links, and general history flow before task #3 changes",
+  "observed": {
+    "countPredicate": "child task in active workspace with failed or interrupted status",
+    "countAction": "opens general history without a review filter",
+    "attentionLinks": "separate links to open task detail",
+    "historyRows": "no review reason or visual indication on failed/interrupted child tasks",
+    "cancelled": "not included in review count",
+    "completed": "not included in review count"
+  },
+  "sourceSnapshots": "Unrelated in-progress changes were present in web/app.ts and web/model.ts; scoped source excerpts are preserved in baseline-source.md; no full-file baseline was made to avoid misrepresenting or overwriting concurrent changes."
+}

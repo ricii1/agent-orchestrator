@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {approvalView} from '../web/approval.ts';
+import {approvalView,formExample} from '../web/approval.ts';
 import {CodexAdapter} from '../src/adapters/codex.ts';
 import type {Approval,RunContext} from '../src/types.ts';
 const approval=(details:unknown,kind='item/commandExecution/requestApproval'):Approval=>({id:'request',taskId:'pm',kind,details,status:'pending',answer:'',createdAt:'2026-11-04'});
@@ -55,4 +55,11 @@ test('real elicitation fields still require their structured answer; URL confirm
   context.approve=async()=>({approved:true,answer:'iya'});
   assert.deepEqual(await adapter.serverRequest(context,'mcpServer/elicitation/request',details),{action:'decline',content:null});
   assert.deepEqual(await adapter.serverRequest(context,'mcpServer/elicitation/request',{mode:'url',url:'https://example.invalid/authorize'}),{action:'accept',content:null});
+});
+
+
+test('form examples derive only from supplied schema and do not invent unsupported fields',()=>{
+  assert.deepEqual(formExample({type:'object',properties:{domain:{type:'string'},count:{type:'integer'},scope:{enum:['project','user']},enabled:{type:'boolean'},unknown:{$ref:'#/missing'}}}),{domain:'…',count:0,scope:'project',enabled:false});
+  assert.equal(formExample({oneOf:[{type:'string'}]}),undefined);
+  assert.deepEqual(formExample({type:'object',properties:{name:{examples:['docs']}}}),{name:'docs'});
 });

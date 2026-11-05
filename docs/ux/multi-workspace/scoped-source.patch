@@ -1,0 +1,420 @@
+--- a/src/types.ts
++++ b/src/types.ts
+@@ -2,12 +2,17 @@
+ export type Status = 'queued' | 'running' | 'waiting' | 'completed' | 'failed' | 'cancelled' | 'interrupted';
+ export interface Task {
+   id: string; kind?: 'pm'; role?: string; parentId: string | null; title: string; prompt: string; provider: Provider;
+-  model: string; workspace: string; executionPath: string | null; branch: string | null; baseCommit: string | null;
++  workerDefaults?: WorkspaceAgents; model: string; workspace: string; executionPath: string | null; branch: string | null; baseCommit: string | null;
+   sessionId: string | null; status: Status; result: string; error: string;
+   scheduleId: string | null; createdAt: string; updatedAt: string;
+ }
+ export type PermissionMode='manual'|'auto'|'full';
+-export interface Settings { permissions?: Partial<Record<Provider,PermissionMode>>; roots: string[]; coordinatorProvider: Provider; workerProvider: Provider; claudeModel: string; codexModel: string; maxWorkers: number; }
++export interface WorkspaceAgents { coordinatorProvider: Provider; workerProvider: Provider; claudeModel: string; codexModel: string; }
++export function workspaceAgents(settings: Settings, workspace: string): WorkspaceAgents {
++  const {coordinatorProvider,workerProvider,claudeModel,codexModel}=settings;
++  return {...{coordinatorProvider,workerProvider,claudeModel,codexModel},...settings.workspaceAgents?.[workspace]};
++}
++export interface Settings { workspaceAgents?: Record<string, WorkspaceAgents>; permissions?: Partial<Record<Provider,PermissionMode>>; roots: string[]; coordinatorProvider: Provider; workerProvider: Provider; claudeModel: string; codexModel: string; maxWorkers: number; }
+ export interface Event { id: number; taskId: string | null; type: string; data: unknown; createdAt: string; }
+ export interface Approval { id: string; taskId: string; kind: string; details: unknown; status: 'pending' | 'approved' | 'denied' | 'expired'; answer: string; choice?: string; automatic?:boolean; createdAt: string; }
+ export interface Schedule { id: string; title: string; prompt: string; workspace: string; provider: Provider; model: string; cron: string; timezone: string; enabled: boolean; lastRun: string | null; }
+@@ -20,3 +25,6 @@
+ export interface AgentRun { done: Promise<string>; cancel(): void; }
+ export interface Adapter { run(context: RunContext): AgentRun; }
+ export const active = (s: Status) => ['queued', 'running', 'waiting'].includes(s);
++
++export const sameWorkspaceAgents=(a:WorkspaceAgents,b:WorkspaceAgents)=>!!a&&!!b&&(['coordinatorProvider','workerProvider','claudeModel','codexModel'] as const).every(key=>a[key]===b[key]);
++export const matchesPM=(task:Task,workspace:string,agents:WorkspaceAgents)=>task.kind==='pm'&&task.workspace===workspace&&task.provider===agents.coordinatorProvider&&task.model===(task.provider==='claude'?agents.claudeModel:agents.codexModel)&&(!task.workerDefaults||sameWorkspaceAgents(task.workerDefaults,agents));
+--- a/src/engine.ts
++++ b/src/engine.ts
+@@ -3,8 +3,15 @@
+ import { randomBytes, randomUUID } from 'node:crypto';
+ import { EventEmitter } from 'node:events';
+ import { Store } from './store.js';
+-import { active, type Adapter, type AgentRun, type Approval, type Provider, type Task } from './types.js';
++import { matchesPM, sameWorkspaceAgents, workspaceAgents, active, type WorkspaceAgents, type Adapter, type AgentRun, type Approval, type Provider, type Task } from './types.js';
+ import { allowedWorkspace, contains, prepareWorkspace } from './workspace.js';
++const overlaps=(a:string,b:string)=>contains(a,b)||contains(b,a);
++function writeConflict(a:Task,b:Task) {
++  if(!a.parentId&&!b.parentId) return overlaps(a.workspace,b.workspace);
++  if(a.parentId&&b.parentId) return !a.branch&&!b.branch&&overlaps(a.executionPath||a.workspace,b.executionPath||b.workspace);
++  const pm=a.parentId?b:a,worker=a.parentId?a:b;
++  return worker.parentId!==pm.id&&!worker.branch&&overlaps(pm.workspace,worker.executionPath||worker.workspace);
++}
+ export class Engine extends EventEmitter {
+   running = new Map<string, { run?: AgentRun; done?: Promise<void>; capability: string }>();
+   approvals = new Map<string, (value: { approved: boolean; answer: string; choice?:string })=>void>();
+@@ -12,31 +19,45 @@
+   constructor(public store: Store, public adapters: Record<Provider, Adapter>, public dataDir: string, public url: string) { super(); }
+   event(taskId: string | null, type: string, data: unknown) { const event = this.store.event(taskId,type,data); this.emit('event',event); return event; }
+   changed(task: Task) { this.store.saveTask(task); this.event(task.id,'status', { status: task.status, error: task.error }); }
+-  async create(input: { prompt: string; workspace: string; provider?: Provider; model?: string; title?: string; parentId?: string; scheduleId?: string; kind?: 'pm'; role?: string }) {
++  async create(input: { prompt: string; workspace: string; provider?: Provider; model?: string; title?: string; parentId?: string; scheduleId?: string; kind?: 'pm'; role?: string; expectedAgents?: WorkspaceAgents }) {
+     if (this.closing) throw new Error('Daemon is shutting down');
+     if (!input.prompt?.trim() || input.prompt.length > 100000) throw new Error('Prompt must contain 1–100000 characters');
+     if (input.provider && !['claude','codex'].includes(input.provider)) throw new Error('Invalid provider');
++    const workspace = await allowedWorkspace(input.workspace, this.store.settings().roots);
++    // Re-read after filesystem awaits: settings may have changed while admitting this task.
+     const settings = this.store.settings();
+-    const workspace = await allowedWorkspace(input.workspace, settings.roots);
++    if(this.closing) throw new Error('Daemon is shutting down');
++    if(!settings.roots.some(root=>contains(root,workspace))) throw new Error('Workspace is no longer registered');
+     if(input.role!==undefined&&(typeof input.role!=='string'||input.role.length>80)) throw new Error('Freelancer role must be at most 80 characters');
+     if(input.kind==='pm'&&input.parentId) throw new Error('PM cannot be a worker');
+     if (input.parentId && this.store.task(input.parentId).parentId) throw new Error('Workers cannot spawn');
+-    const provider = input.provider || (input.parentId ? settings.workerProvider : settings.coordinatorProvider);
+-    const task = this.store.createTask({ ...input, workspace, provider, model: input.model || (provider === 'claude' ? settings.claudeModel : settings.codexModel) });
++    if(input.expectedAgents&&!sameWorkspaceAgents(input.expectedAgents,workspaceAgents(settings,workspace))) throw new Error('Workspace agents changed. Reload before sending.');
++    const parent=input.parentId?this.store.task(input.parentId):undefined;
++    if(parent&&['cancelled','interrupted','failed'].includes(parent.status)) throw new Error('Parent must be resumed before spawning workers');
++    const defaults=parent ? parent.workerDefaults || workspaceAgents(settings,parent.workspace) : workspaceAgents(settings,workspace);
++    const provider = input.provider || (parent ? defaults.workerProvider : defaults.coordinatorProvider);
++    // Scheduled provider/model semantics stay explicit; empty scheduled models retain global fallback.
++    const models=input.scheduleId?settings:defaults;
++    const {expectedAgents:_,...taskInput}=input;
++    const defaultModel=provider==='claude'?models.claudeModel:models.codexModel;
++    const model=input.scheduleId ? input.model || defaultModel : input.model ?? defaultModel;
++    const task = this.store.createTask({ ...taskInput, workspace, provider, model, ...(!parent?{workerDefaults:defaults}:{}) });
+     this.store.enqueue(task.id, input.prompt); this.event(task.id,'created',task); void this.drain(); return task;
+   }
+   private pmMessages: Promise<unknown> = Promise.resolve();
+-  async messagePM(workspace: string, text: string): Promise<Task> {
+-    // Serialize creation so two first messages cannot create two PMs for one workspace/provider.
++  async messagePM(workspace: string, text: string, expected?:WorkspaceAgents): Promise<Task> {
++    // Serialize only admission, never agent execution, to deduplicate initial messages.
+     const result=this.pmMessages.then(async()=> {
+       const settings=this.store.settings();
+       const actual=await allowedWorkspace(workspace,settings.roots);
+-      const pm=this.store.tasks().find(t=>t.kind==='pm'&&t.workspace===actual&&t.provider===settings.coordinatorProvider);
++      const defaults=workspaceAgents(this.store.settings(),actual);
++      if(expected&&!sameWorkspaceAgents(expected,defaults)) throw new Error('Workspace agents changed. Reload before sending.');
++      const pm=this.store.tasks().find(t=>matchesPM(t,actual,defaults));
+       const input=text.trim();
+       if(input==='/compact'){if(!pm)throw new Error('Mulai percakapan terlebih dahulu.');await this.compact(pm.id);return this.store.task(pm.id);}
+       if(input.startsWith('/')||input.startsWith('!'))throw new Error('Gunakan /help atau Terminal untuk perintah ini.');
+       if(pm) { await this.message(pm.id,text);return this.store.task(pm.id); }
+-      return this.create({prompt:text,title:'PM',workspace:actual,kind:'pm',provider:settings.coordinatorProvider});
++      return this.create({prompt:text,title:'PM',workspace:actual,kind:'pm',expectedAgents:defaults,provider:defaults.coordinatorProvider,model:defaults.coordinatorProvider==='claude'?defaults.claudeModel:defaults.codexModel});
+     });
+     this.pmMessages=result.catch(()=>{});return result;
+   }
+@@ -52,6 +73,7 @@
+   async compact(id:string){
+     const task=this.store.task(id);
+     if(this.closing||this.running.has(id)||this.lockedTasks.has(id)||this.store.pending(id).length)throw new Error('Tunggu giliran agent selesai sebelum /compact.');
++    if([...this.running.keys()].some(other=>writeConflict(task,this.store.task(other))))throw new Error('Tunggu agent workspace yang tumpang tindih selesai sebelum /compact.');
+     if(!task.sessionId)throw new Error('Belum ada sesi untuk diringkas. Mulai percakapan terlebih dahulu.');
+     if(['failed','interrupted','cancelled'].includes(task.status))throw new Error('Lanjutkan sesi sebelum /compact.');
+     const previous=task.status;
+@@ -88,11 +110,9 @@
+       for (const task of this.store.tasks().filter(t=>t.status==='queued')) {
+         if (this.running.has(task.id) || this.lockedTasks.has(task.id)) continue;
+         const inFlight = [...this.running.keys()].map(id=>this.store.task(id));
+-        if (!task.parentId && inFlight.some(t=>!t.parentId)) continue;
++        // Independent PM roots and Git worktrees can run together; overlapping writers wait.
++        if(inFlight.some(other=>writeConflict(task,other))) continue;
+         if (task.parentId && inFlight.filter(t=>t.parentId).length >= this.store.settings().maxWorkers) continue;
+-        // Git workers get independent worktrees. Non-Git writers lock overlapping directories.
+-        const workspace = task.executionPath || task.workspace;
+-        if (task.parentId && !task.branch && inFlight.some(t=>t.parentId && !t.branch && (contains(t.executionPath || t.workspace, workspace) || contains(workspace,t.executionPath || t.workspace)))) continue;
+         this.running.set(task.id, { capability: randomBytes(32).toString('hex') });
+         task.status='running'; this.changed(task);
+         this.running.get(task.id)!.done=this.execute(task.id);
+--- a/src/server.ts
++++ b/src/server.ts
+@@ -8,7 +8,7 @@
+ import { Scheduler } from './scheduler.js';
+ import { UsageService } from './usage.js';
+ import { allowedWorkspace, browseFolders, contains, diff, merge, repoRoot } from './workspace.js';
+-import type { Settings } from './types.js';
++import { active, sameWorkspaceAgents, workspaceAgents, type Settings, type WorkspaceAgents } from './types.js';
+ const exec=promisify(execFile);
+ async function body(req: IncomingMessage) {
+   if(!req.headers['content-type']?.startsWith('application/json')) throw new Error('JSON content-type is required');
+@@ -54,7 +54,7 @@
+           return json(200,await browseFolders(input.path,input.hidden===true));
+         }
+         if(req.method==='GET' && path==='/api/usage') return json(200,await usage.get(url.searchParams.get('refresh')==='1'));
+-        if(req.method==='POST' && path==='/api/pm/messages') { const input=await body(req); return json(200,await engine.messagePM(text(input.workspace,'workspace',4096),text(input.text,'message'))); }
++        if(req.method==='POST' && path==='/api/pm/messages') { const input=await body(req); return json(200,await engine.messagePM(text(input.workspace,'workspace',4096),text(input.text,'message'),input.expectedAgents)); }
+         if(req.method==='GET' && path==='/api/state') return json(200,{ capabilities:{permissionModes:true},tasks:engine.store.tasks(),terminals:terminals.summary(),approvals:engine.store.approvals(),schedules:engine.store.all('schedules'),settings:engine.store.settings() });
+         if(req.method==='GET' && path==='/api/providers') {
+           if(!healthCache || Date.now()-healthCache.time>30000) {
+@@ -78,7 +78,7 @@
+           streams.add(res);
+           let flushing=false;
+           const flush=()=> {
+-            if(flushing || res.destroyed) return;
++            if(flushing || res.destroyed || res.writableEnded) return;
+             flushing=true;
+             try {
+               for(;;) {
+@@ -126,21 +126,57 @@
+         }
+         if(req.method==='POST' && path==='/api/tasks') { const input=await body(req); return json(201,await engine.create({prompt:text(input.prompt,'prompt'),workspace:text(input.workspace,'workspace',4096),provider:input.provider===undefined?undefined:provider(input.provider),model:typeof input.model==='string'?input.model:undefined})); }
+         if(req.method==='POST' && path==='/api/approvals') { const input=await body(req); if(typeof input.approved!=='boolean') throw new Error('approved must be boolean'); engine.answer(text(input.id,'approval ID',100),input.approved,typeof input.answer==='string'?input.answer:'',input.choice===undefined?undefined:text(input.choice,'approval choice',100)); return json(200,{ok:true}); }
++        // Deliberately additive: never accepts root removal, permissions, or global defaults.
++        if(req.method==='POST' && path==='/api/workspaces') {
++          const input=await body(req);
++          if(Object.keys(input).some(key=>key!=='workspace')) throw new Error('Only workspace registration is allowed');
++          const location=text(input.workspace,'workspace',4096);
++          const workspace=await allowedWorkspace(location,[location]);
++          const latest=engine.store.settings();
++          if(!latest.roots.includes(workspace)) {
++            if(latest.roots.length>=30) throw new Error('At most 30 workspace directories');
++            const settings={...latest,roots:[...latest.roots,workspace]};
++            engine.store.saveSettings(settings);engine.event(null,'settings',settings);
++          }
++          return json(200,{workspace});
++        }
++        if(req.method==='PUT' && path==='/api/workspaces/agents') {
++          const input=await body(req);
++          if(Object.keys(input).some(key=>!['workspace','agents','expected'].includes(key))) throw new Error('Only workspace agent configuration is allowed');
++          const workspace=await allowedWorkspace(text(input.workspace,'workspace',4096),engine.store.settings().roots);
++          const value=input.agents;
++          if(!value||typeof value!=='object'||Array.isArray(value)||Object.keys(value).length!==4||Object.keys(value).some(key=>!['coordinatorProvider','workerProvider','claudeModel','codexModel'].includes(key))) throw new Error('Invalid workspace agent configuration');
++          for(const key of ['claudeModel','codexModel']) if(typeof value[key]!=='string'||value[key].length>200||/[\r\n\0]/.test(value[key])) throw new Error('Invalid model');
++          const agents:WorkspaceAgents={coordinatorProvider:provider(value.coordinatorProvider),workerProvider:provider(value.workerProvider),claudeModel:value.claudeModel,codexModel:value.codexModel};
++          const latest=engine.store.settings();
++          if(!latest.roots.some(root=>contains(root,workspace))) throw new Error('Workspace is no longer registered');
++          const previous=workspaceAgents(latest,workspace);
++          const same=sameWorkspaceAgents;
++          if(!same(input.expected,previous)) return json(409,{error:'Konfigurasi workspace berubah. Muat ulang pengaturan sebelum menyimpan.'});
++          if(!same(agents,previous)) {
++            const overlaps=(path:string)=>contains(path,workspace)||contains(workspace,path);
++            const tasks=engine.store.tasks();
++            if(tasks.some(task=>(active(task.status)||engine.running.has(task.id)||engine.lockedTasks.has(task.id)) && (overlaps(task.workspace)||!!task.parentId&&overlaps(tasks.find(t=>t.id===task.parentId)?.workspace||task.workspace)))) throw new Error('Selesaikan agent dan freelancer workspace ini sebelum mengubah provider/model. Workspace lain tetap dapat berjalan.');
++          }
++          const settings={...latest,workspaceAgents:{...latest.workspaceAgents,[workspace]:agents}};
++          engine.store.saveSettings(settings);engine.event(null,'settings',settings);return json(200,settings);
++        }
+         if(req.method==='PUT' && path==='/api/settings') {
+           const input=await body(req);
+           if(!Array.isArray(input.roots) || input.roots.length>30 || input.roots.some((x:unknown)=>typeof x!=='string')) throw new Error('Invalid workspace directories');
+           const roots=await Promise.all(input.roots.map(async(p:string)=>allowedWorkspace(p,[p])));
+           if(!Number.isInteger(input.maxWorkers) || input.maxWorkers<1 || input.maxWorkers>10) throw new Error('Worker limit must be 1–10');
+           const previous=engine.store.settings();
++          if(input.expectedSettings!==undefined&&JSON.stringify(input.expectedSettings)!==JSON.stringify(previous)) return json(409,{error:'Settings changed. Reload before saving.'});
+           const permissions=input.permissions===undefined?previous.permissions??{}:input.permissions;
+           if(!permissions||typeof permissions!=='object'||Array.isArray(permissions)||Object.keys(permissions).some(key=>!['claude','codex'].includes(key))||Object.values(permissions).some(mode=>typeof mode!=='string'||!['manual','auto','full'].includes(mode)))throw new Error('Mode izin harus manual, auto atau full untuk setiap provider');
+           for(const name of ['claude','codex'] as const){
+             const old=previous.permissions?.[name]||'manual',next=permissions[name]||'manual';
+             if(old!==next&&(old==='full'||next==='full')&&[...engine.running.keys()].some(id=>engine.store.task(id).provider===name))throw new Error('Selesaikan atau hentikan agent '+name+' sebelum mengubah Akses penuh.');
+           }
+-          const settings:Settings={permissions,roots,coordinatorProvider:provider(input.coordinatorProvider),workerProvider:provider(input.workerProvider),maxWorkers:input.maxWorkers,claudeModel:typeof input.claudeModel==='string'?input.claudeModel:'',codexModel:typeof input.codexModel==='string'?input.codexModel:''};
++          const settings:Settings={workspaceAgents:previous.workspaceAgents,permissions,roots,coordinatorProvider:provider(input.coordinatorProvider),workerProvider:provider(input.workerProvider),maxWorkers:input.maxWorkers,claudeModel:typeof input.claudeModel==='string'?input.claudeModel:'',codexModel:typeof input.codexModel==='string'?input.codexModel:''};
+           const accessChanged=(['roots','coordinatorProvider','workerProvider','maxWorkers','claudeModel','codexModel'] as const).some(key=>JSON.stringify(previous[key])!==JSON.stringify(settings[key]));
+-          if((engine.running.size || engine.lockedTasks.size || terminals.summary().some(s=>s.exitCode===null))&&accessChanged)throw new Error('Stop active agents before changing access settings');
++          if((engine.store.tasks().some(t=>active(t.status)) || engine.running.size || engine.lockedTasks.size || terminals.summary().some(s=>s.exitCode===null))&&accessChanged)throw new Error('Stop active agents before changing access settings');
+           engine.store.saveSettings(settings); engine.event(null,'settings',settings); engine.applyPermissionSettings(); void engine.drain(); return json(200,settings);
+         }
+         if(req.method==='POST' && path==='/api/schedules') {
+--- a/web/model.ts
++++ b/web/model.ts
+@@ -1,10 +1,14 @@
+-import type {Task,Status,Provider} from '../src/types.js';
++import {workspaceAgents,matchesPM} from '../src/types.js';
++export {workspaceAgents} from '../src/types.js';
++import type {Task,Status,Provider,WorkspaceAgents} from '../src/types.js';
+ export type {Task,Status,Provider,Approval,Schedule,Settings,Event} from '../src/types.js';
+ export type {Usage,ProviderQuota,QuotaWindow} from '../src/usage.js';
+ export const isWorking=(status:Status)=>['queued','running','waiting'].includes(status);
+ export const inWorkspace=(task:Task,workspace:string,tasks:Task[])=>{const parent=task.parentId?tasks.find(t=>t.id===task.parentId):undefined;return (parent?.workspace||task.workspace)===workspace;};
+ export const freelancers=(tasks:Task[],workspace:string)=>tasks.filter(t=>t.parentId&&inWorkspace(t,workspace,tasks)&&isWorking(t.status));
+-export const pmFor=(tasks:Task[],workspace:string,provider:Provider)=>tasks.find(t=>t.kind==='pm'&&t.workspace===workspace&&t.provider===provider);
++export const pmFor=(tasks:Task[],workspace:string,provider:Provider,agents?:WorkspaceAgents)=>tasks.find(t=>agents?matchesPM(t,workspace,agents):t.kind==='pm'&&t.workspace===workspace&&t.provider===provider);
++export const pmHistory=(tasks:Task[],workspace:string)=>tasks.filter(t=>t.kind==='pm'&&t.workspace===workspace).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt));
++export const pmDraftKey=(workspace:string,settings:import('../src/types.js').Settings)=>{const agents=workspaceAgents(settings,workspace);return JSON.stringify([workspace,agents.coordinatorProvider,agents.coordinatorProvider==='claude'?agents.claudeModel:agents.codexModel,agents.workerProvider,agents.claudeModel,agents.codexModel]);};
+ export const archive=(tasks:Task[],workspace:string)=>tasks.filter(t=>t.kind!=='pm'&&inWorkspace(t,workspace,tasks)&&!isWorking(t.status)).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt));
+ export const shortPath=(path:string)=>path.split('/').filter(Boolean).at(-1)||path||'Pilih workspace';
+ export const roleOf=(task:Task)=>task.role||task.title||'Freelancer';
+--- a/web/app.ts
++++ b/web/app.ts
+@@ -6,7 +6,7 @@
+ import {renderMessage} from './format.js';
+ import {chatEntries,chatName,workerChats,chatOption} from './chat.js';
+ import type {FolderListing} from '../src/workspace.js';
+-import {freelancers,pmFor,archive,inWorkspace,roleOf,shortPath,statusText,isWorking,type Task,type Settings,type Approval,type Schedule,type Event,type Usage,type ProviderQuota} from './model.js';
++import {workspaceAgents,pmDraftKey,pmHistory,freelancers,pmFor,archive,inWorkspace,roleOf,shortPath,statusText,isWorking,type Task,type Settings,type Approval,type Schedule,type Event,type Usage,type ProviderQuota} from './model.js';
+ 
+ type TerminalSummary={id:string;workspace:string;exitCode:number|null};
+ type State={terminals?:TerminalSummary[];capabilities?:{permissionModes?:boolean};tasks:Task[];settings:Settings;approvals:Approval[];schedules:Schedule[]};
+@@ -21,7 +21,8 @@
+ let refreshInFlight:Promise<void>|undefined,refreshAgain=false;
+ const eventCache=new Map<string,Event[]>();
+ const drafts=new Map<string,string>();
+-const draftKey=()=>JSON.stringify([workspace,state.settings.coordinatorProvider]);
++const agents=()=>workspaceAgents(state.settings,workspace);
++const draftKey=()=>pmDraftKey(workspace,state.settings);
+ const transcriptLoading=new Set<string>(),transcriptErrors=new Map<string,string>();
+ const approvalState=new Map<string,{answer:string;error:string;busy:boolean}>();
+ const sendErrors=new Map<string,string>();
+@@ -56,7 +57,7 @@
+   if(data===null)throw new Error('Respons API tidak valid. Pastikan backend dan UI memakai versi yang sama.');
+   return data;
+ }
+-function pm(){return pmFor(state.tasks,workspace,state.settings.coordinatorProvider);}
++function pm(){return pmFor(state.tasks,workspace,agents().coordinatorProvider,agents());}
+ function chatTask(){return selectedChatId?state.tasks.find(t=>t.id===selectedChatId&&inWorkspace(t,workspace,state.tasks)):pm();}
+ async function showChat(id:string|null){
+   if(id&&!state.tasks.some(t=>t.id===id&&inWorkspace(t,workspace,state.tasks)))throw new Error('Percakapan tidak ditemukan di workspace ini.');
+@@ -100,7 +101,7 @@
+   const openApprovalPanels=[...app.querySelectorAll<HTMLDetailsElement>('[data-approval-panel][open]')].map(panel=>panel.dataset.approvalPanel);
+   const approvalDrafts=[...app.querySelectorAll<HTMLTextAreaElement>('[data-approval]')].map(e=>({id:e.dataset.approval!,text:e.value,start:e.selectionStart,end:e.selectionEnd,focused:e===document.activeElement}));
+   const chatFocus=document.activeElement?.id==='pm-message';
+-  const oldChat=app.querySelector<HTMLElement>('#conversation'),chatKey=chatTask()?.id||'pm:'+workspace,sameChat=oldChat?.dataset.chatId===chatKey;
++  const oldChat=app.querySelector<HTMLElement>('#conversation'),chatKey=chatTask()?.id||'pm:'+draftKey(),sameChat=oldChat?.dataset.chatId===chatKey;
+   const scroll=sameChat?oldChat!.scrollTop:0,atBottom=!sameChat||oldChat!.scrollHeight-oldChat!.scrollTop-oldChat!.clientHeight<100;
+   const layout=el('div','layout'),sidebar=el('aside','sidebar');
+   const brand=el('div','brand');brand.append(el('span','pixel-mark'),el('strong','','kantor'));sidebar.append(brand);
+@@ -112,13 +113,13 @@
+   const account=el('section','accounts');account.id='account-usage';sidebar.append(account,button('Pengaturan',settingsDialog,'settings-button'));sidebar.classList.toggle('mobile-open',accountOpen);
+   const main=el('main','main'),header=el('header','topbar'),heading=el('div');
+   heading.append(el('h1','',shortPath(workspace)||'Kantor'),el('span','workspace-path',workspace||'Belum ada workspace'));
+-  const controls=el('div','toolbar');controls.append(el('span','connection',connected?'Terhubung':'Menghubungkan kembali · status mungkin tertinggal'),button('Riwayat',historyDialog,'quiet'),button('Terminal'+(state.terminals?' · '+state.terminals.filter(t=>t.exitCode===null).length:''),terminalList,'quiet'),button('Workspace & akun',()=>{accountOpen=!accountOpen;render();},'account-toggle quiet'),button('Pengaturan',settingsDialog,'mobile-settings quiet'));
++  const controls=el('div','toolbar');controls.append(el('span','connection',connected?'Terhubung':'Menghubungkan kembali · status mungkin tertinggal'),button('Agent workspace',workspaceAgentsDialog,'quiet'),button('Riwayat',historyDialog,'quiet'),button('Terminal'+(state.terminals?' · '+state.terminals.filter(t=>t.exitCode===null).length:''),terminalList,'quiet'),button('Workspace & akun',()=>{accountOpen=!accountOpen;render();},'account-toggle quiet'),button('Pengaturan',settingsDialog,'mobile-settings quiet'));
+   const reviewCount=state.tasks.filter(t=>t.parentId&&inWorkspace(t,workspace,state.tasks)&&['failed','interrupted'].includes(t.status)).length;if(reviewCount)controls.append(button('Perlu ditinjau · '+reviewCount,historyDialog,'quiet'));controls.querySelector('.connection')?.setAttribute('role','status');if(workspace)heading.append(button('Salin path',async()=>{try{await navigator.clipboard.writeText(workspace);notify('Path workspace disalin.');}catch{const range=document.createRange();range.selectNodeContents(heading.querySelector('.workspace-path')!);const selection=window.getSelection();selection?.removeAllRanges();selection?.addRange(range);}},'copy-path quiet'));header.append(heading,controls);
+   const guide=el('details','head-guide');guide.dataset.detailKey='head-guide';guide.open=!pm();guide.append(el('summary','','Freelancer Git mulai dari commit terakhir'),el('p','','Perubahan lokal yang belum di-commit tidak ikut. Git baru memerlukan initial commit. Folder non-Git yang tumpang tindih dikerjakan bergantian. Ini panduan statis, bukan pemeriksaan HEAD atau perubahan lokal.'));
+   main.append(guide);
+   const stage=el('section','office-stage');stage.setAttribute('aria-label','Kantor freelancer');stage.append(office.canvas);
+   const live=freelancers(state.tasks,workspace),current=pm();
+-  office.update([{id:'pm',name:'PM',provider:current?.provider||state.settings.coordinatorProvider,status:current&&isWorking(current.status)?current.status:'idle',pm:true},...live.map(t=>({id:t.id,name:roleOf(t),provider:t.provider,status:t.status}))]);
++  office.update([{id:'pm',name:'PM',provider:current?.provider||agents().coordinatorProvider,status:current&&isWorking(current.status)?current.status:'idle',pm:true},...live.map(t=>({id:t.id,name:roleOf(t),provider:t.provider,status:t.status}))]);
+   const people=el('div','people');people.append(button('PM',()=>showChat(null),'person pm-person'));
+   for(const task of live){const b=button('',()=>showChat(task.id),'person');b.append(el('span','person-dot '+task.provider),el('span','',roleOf(task)),badge(task));people.append(b);}
+   if(!live.length)people.append(el('span','no-freelancers','Belum ada freelancer yang bekerja.'));
+@@ -128,19 +129,21 @@
+   const note=el('footer','office-note');note.append(el('span','','Freelancer hadir saat dibutuhkan. Hasil pekerjaan tetap ada di riwayat.'));main.append(note);
+   const viewed=chatTask(),logView=selectedChatId!==null;
+   const chat=el('aside','chat-panel'),chatHeader=el('div','chat-header'),title=el('div','chat-title');
+-  const picker=el('div','chat-switcher'),chooser=el('details','chat-chooser'),summary=el('summary','',logView&&viewed?chatOption(viewed):'PM · '+state.settings.coordinatorProvider);
++  const picker=el('div','chat-switcher'),chooser=el('details','chat-chooser'),summary=el('summary','',logView&&viewed?chatOption(viewed):'PM · '+agents().coordinatorProvider);
+   summary.setAttribute('aria-label','Pilih chat agent');chooser.append(summary);
+   const choices=el('div','chat-choices');choices.setAttribute('aria-label','Daftar chat agent');
+   const addChoice=(id:string|null,label:string)=>{const option=button(label,()=>{chooser.open=false;return showChat(id);},'chat-choice');option.dataset.chatId=id||'';option.setAttribute('aria-pressed',String((selectedChatId||null)===id));choices.append(option);};
+-  addChoice(null,'PM · '+state.settings.coordinatorProvider);
++  addChoice(null,'PM · '+agents().coordinatorProvider);
++  const oldPMs=pmHistory(state.tasks,workspace).filter(task=>task.id!==current?.id);
++  if(oldPMs.length){choices.append(el('p','chat-choice-heading','Sesi PM lain · provider/model terpisah'));for(const task of oldPMs)addChoice(task.id,`PM · ${task.provider} · ${task.model||'model default'} · ${statusText[task.status]} · ${task.id.slice(0,8)}`);}
+   const workers=workerChats(state.tasks,workspace);
+   for(const [label,active]of [['Sedang bekerja',true],['Riwayat freelancer',false]] as const){
+     const tasks=workers.filter(t=>isWorking(t.status)===active);if(!tasks.length)continue;
+     choices.append(el('p','chat-choice-heading',label));
+     for(const task of tasks)addChoice(task.id,chatOption(task));
+   }
+-  if(selectedChatId&&viewed&&!workers.some(t=>t.id===selectedChatId))addChoice(viewed.id,chatOption(viewed));
+-  chooser.append(choices);picker.append(el('span','','Percakapan'),chooser);title.append(picker,el('span','chat-provider',viewed?.provider||state.settings.coordinatorProvider));
++  if(selectedChatId&&viewed&&!workers.some(t=>t.id===selectedChatId)&&!oldPMs.some(t=>t.id===selectedChatId))addChoice(viewed.id,chatOption(viewed));
++  chooser.append(choices);picker.append(el('span','','Percakapan'),chooser);title.append(picker,el('span','chat-provider',viewed?.provider||agents().coordinatorProvider));
+   const chatControls=el('div','pm-controls');chatControls.append(el('span','pm-state',viewed?statusText[viewed.status]:'Siap'));
+   if(viewed&&isWorking(viewed.status))chatControls.append(button(viewed.parentId?'Hentikan freelancer':'Hentikan PM + anak',persistentAction(chat,async()=>{if(!viewed.parentId&&!confirm('Hentikan PM dan semua freelancer anak yang masih aktif?'))return;await api('tasks/'+viewed.id+'/cancel','POST',{});await refresh();}),'stop-pm'));
+   const compactButton=button('/compact',persistentAction(chat,compactChat),'stop-pm');compactButton.title='Ringkas konteks sesi agent';compactButton.disabled=!viewed?.sessionId||!!viewed&&['running','queued'].includes(viewed.status);chatControls.append(compactButton);
+@@ -150,11 +153,11 @@
+   if(viewed&&['failed','interrupted','cancelled'].includes(viewed.status)){const error=feedback(viewed.error||(viewed.status==='interrupted'?'Sesi terputus. Tinjau aktivitas dan perubahan sebelum melanjutkan.':'Tugas dihentikan. Riwayat tetap tersimpan.'));error.append(button('Tinjau lalu lanjutkan',()=>openTask(viewed.id),'quiet'));chat.append(error);}
+   let composerInput:HTMLTextAreaElement|undefined;
+   if(logView&&viewed){
+-    const footer=el('div','worker-chat-footer');footer.append(el('p','',`${chatName(viewed)} mengerjakan instruksi PM. Log diperbarui otomatis. Untuk memberi arahan, kembali ke PM.`));
++    const footer=el('div','worker-chat-footer');footer.append(el('p','',viewed.kind==='pm'?'Sesi PM tersimpan. Log diperbarui otomatis. Kembali ke PM aktif untuk mengirim pesan.':`${chatName(viewed)} mengerjakan instruksi PM. Log diperbarui otomatis. Untuk memberi arahan, kembali ke PM.`));
+     const actions=el('div','actions');actions.append(button('Kembali ke PM',()=>showChat(null),'primary'),button('Detail pekerjaan',()=>openTask(viewed.id),'quiet'));footer.append(actions);chat.append(footer);
+   }else{
+     const composer=el('form','composer'),message=el('textarea');composerInput=message;message.id='pm-message';const pmStopped=!!current&&['failed','interrupted','cancelled'].includes(current.status);message.placeholder=pmStopped?'Lanjutkan PM untuk melanjutkan percakapan.':workspace?'Beri PM sebuah tujuan…':'Tambahkan folder proyek untuk memulai.';message.setAttribute('aria-label','Pesan untuk PM');message.rows=3;message.required=true;message.disabled=!workspace||pmStopped;message.value=drafts.get(draftKey())||'';message.oninput=()=>drafts.set(draftKey(),message.value);
+-    composer.append(el('small','composer-context',`${workspace||'Pilih workspace'} · PM ${state.settings.coordinatorProvider}`));if(workspace&&!current)composer.append(el('small','','Freelancer Git mulai dari commit terakhir; perubahan lokal yang belum di-commit tidak ikut. Git baru memerlukan initial commit.'));
++    composer.append(el('small','composer-context',`${workspace||'Pilih workspace'} · PM ${agents().coordinatorProvider} · ${agents().coordinatorProvider==='claude'?agents().claudeModel||'model default':agents().codexModel||'model default'}`));if(workspace&&!current)composer.append(el('small','','Freelancer Git mulai dari commit terakhir; perubahan lokal yang belum di-commit tidak ikut. Git baru memerlukan initial commit.'));
+     const composerFooter=el('div','composer-footer');composerFooter.append(el('small','','Enter kirim · Shift+Enter baris baru · !perintah langsung ke shell, bukan pesan PM'));
+     const submit=el('button','primary',sending?'Mengirim…':'Kirim');submit.type='submit';submit.disabled=!workspace||sending||pmStopped;composerFooter.append(submit);composer.append(message,composerFooter,button('Bantuan perintah',()=>sendMessage('/help'),'quiet'));if(sendErrors.has(draftKey()))composer.append(feedback(sendErrors.get(draftKey())!));
+     composer.onsubmit=event=>{event.preventDefault();void sendMessage(message.value);};
+@@ -195,7 +198,7 @@
+   }
+ }
+ async function sendMessage(text:string){
+-  if(sending||!text.trim())return;sending=true;const target=workspace,key=draftKey();sendErrors.delete(key);render();
++  if(sending||!text.trim())return;sending=true;const target=workspace,key=draftKey(),expectedAgents=agents();sendErrors.delete(key);render();
+   try{
+     const input=text.trim();
+     if(input.startsWith('!')){if(!input.slice(1).trim())throw new Error('Tulis perintah setelah !, misalnya !git status');await openTerminal(input.slice(1).trim());drafts.delete(key);return;}
+@@ -203,7 +206,7 @@
+     if(input==='/terminal'){await openTerminal();drafts.delete(key);return;}
+     if(input==='/help'){const d=dialog('Perintah chat');d.append(el('p','path','/compact — ringkas konteks agent yang dipilih\n/terminal — buka shell interaktif laptop\n!perintah — jalankan di terminal, bukan melalui PM\n/help — daftar perintah\n\nTerminal mendukung shell, input password, Ctrl+C, dan program interaktif. Perintah slash lain belum dipetakan di chat; gunakan CLI aslinya di terminal untuk antarmuka lengkap. Output terminal tidak otomatis masuk konteks PM.'));if(drafts.get(key)?.trim()===input)drafts.delete(key);return;}
+     if(input.startsWith('/'))throw new Error('Perintah belum didukung di chat ini. Ketik /help atau gunakan CLI aslinya di Terminal.');
+-    const task:Task=await api('pm/messages','POST',{workspace:target,text});drafts.delete(key);
++    const task:Task=await api('pm/messages','POST',{workspace:target,text,expectedAgents});drafts.delete(key);
+     await refresh();await loadEvents(task.id);
+   }catch(error){sendErrors.set(key,errorText(error)+' Periksa riwayat sebelum mengirim ulang bila hasil pengiriman belum pasti.');}finally{sending=false;render();}
+ }
+@@ -405,7 +408,7 @@
+ }
+ async function addWorkspace(){
+   const path=await pickFolder();if(!path)return;
+-  const save=async()=>{const latest:State=await api('state');if(!latest.settings.roots.includes(path))await api('settings','PUT',{...latest.settings,roots:[...latest.settings.roots,path]});await refresh();rememberWorkspace(path);};
++  const save=async()=>{const result=await api('workspaces','POST',{workspace:path});await refresh();rememberWorkspace(result.workspace);};
+   try{await save();}catch(e){const d=dialog('Workspace belum ditambahkan');d.append(el('p','path',path),feedback(errorText(e)),button('Coba simpan workspace lagi',persistentAction(d,async()=>{await save();d.close();}),'primary'));}
+ }
+ async function saveSettings(input:unknown){
+@@ -414,8 +417,28 @@
+   if(expected&&(['claude','codex'] as const).some(p=>(result.permissions?.[p]||'manual')!==(expected[p]||'manual'))||expected&&!result.permissions)throw new Error('Backend belum menyimpan mode izin. Pembaruan perlu dilakukan pemilik saat pekerjaan idle.');
+   return result;
+ }
++function workspaceAgentsDialog(){
++  if(!workspace)throw new Error('Pilih workspace terlebih dahulu.');
++  const target=workspace,d=dialog('Agent workspace · '+shortPath(target)),form=el('form','settings-section');
++  let expected=workspaceAgents(state.settings,target);
++  const coordinator=select('Provider PM workspace',['codex','claude'],expected.coordinatorProvider),worker=select('Default freelancer workspace',['codex','claude'],expected.workerProvider);
++  const claude=field('Model Claude workspace · kosong untuk default',expected.claudeModel),codex=field('Model Codex workspace · kosong untuk default',expected.codexModel);
++  const status=el('p','section-status');status.setAttribute('role','status');
++  const save=el('button','primary','Simpan agent workspace');save.type='submit';
++  form.append(el('p','path',target),el('p','','Hanya workspace ini. Workspace lain dapat terus berjalan. Perubahan provider/model/default membuka sesi PM terpisah; sesi lama ada di pilihan chat dan Riwayat. Selesaikan PM dan freelancer workspace ini sebelum mengubah konfigurasi.'),coordinator.label,worker.label,claude.label,codex.label,el('p','',`Batas freelancer global: ${state.settings.maxWorkers} bersamaan untuk semua workspace. Terminal dan izin global tidak berubah.`),status,save);
++  form.onsubmit=async event=>{
++    event.preventDefault();if(save.disabled)return;save.disabled=true;status.textContent='';form.querySelector('.inline-error')?.remove();
++    try{
++      const settings:Settings=await api('workspaces/agents','PUT',{workspace:target,expected,agents:{coordinatorProvider:coordinator.input.value,workerProvider:worker.input.value,claudeModel:claude.input.value,codexModel:codex.input.value}});
++      expected=workspaceAgents(settings,target);await refresh();status.textContent='Agent workspace disimpan.';
++    }catch(e){form.append(feedback(errorText(e)));}finally{save.disabled=false;}
++  };
++  d.append(form);
++}
+ function settingsDialog(){
+   const d=dialog('Pengaturan'),s=structuredClone(state.settings);
++  if(workspace)d.append(button('Agent workspace · '+shortPath(workspace),()=>{d.close();workspaceAgentsDialog();},'primary'));
++  d.append(el('p','','Bagian di bawah berlaku global. Agent workspace memiliki provider/model sendiri; workspace lama mengikuti default global sampai dikonfigurasi.'));
+   d.classList.add('settings-dialog');
+   const roots=field('Folder workspace · satu path lengkap per baris',s.roots.join('\n'),true),coordinator=select('Provider PM',['codex','claude'],s.coordinatorProvider),worker=select('Default freelancer',['codex','claude'],s.workerProvider);
+   const permissionSelect=(name:string,value:string)=>{const f=select(name,['manual','auto','full'],value);for(const o of f.input.options)o.textContent=o.value==='full'?'Akses penuh · berisiko':o.value==='auto'?'Otomatis':'Manual';return f;};
+@@ -443,7 +466,7 @@
+           if(full.some(p=>latest.tasks.some(t=>t.provider===p&&t.status==='running')))throw new Error('Selesaikan atau hentikan agent provider terkait sebelum mengubah Akses penuh.');
+           if(full.length&&!confirm('Simpan perubahan izin di semua workspace?\n'+transitions.map(p=>`${p}: ${old?.[p]||'manual'} → ${next[p]}`).join('\n')+'\nAkses penuh: agent berjalan dengan hak user laptop, tanpa sandbox.'))return;
+         }
+-        const result=await saveSettings({...latest.settings,...update});
++        const result=await saveSettings({...latest.settings,...update,expectedSettings:latest.settings});
+         for(const key of keys)if(JSON.stringify(result[key])!==JSON.stringify(update[key]))throw new Error('Respons server berbeda dari perubahan yang diminta. Periksa pengaturan terbaru.');
+         for(const key of keys)Object.assign(s,{[key]:structuredClone(result[key])});if(permission)updatePreview();await refresh();status.textContent=permission?'Izin disimpan.':title+' disimpan.';
+       }catch(e){const error=feedback(errorText(e));error.classList.add('action-error');form.append(error);}finally{save.disabled=permission&&!state.capabilities?.permissionModes;}
+@@ -455,15 +478,15 @@
+   codexPermission.input.onchange=updatePreview;claudePermission.input.onchange=updatePreview;updatePreview();
+   section('Izin global',[codexPermission.label,claudePermission.label,modeHelp,preview],'Simpan izin',()=>({permissions:{codex:codexPermission.input.value as 'manual'|'auto'|'full',claude:claudePermission.input.value as 'manual'|'auto'|'full'}}),true);
+   const browse=button('Pilih folder…',async()=>{const path=await pickFolder();if(path){roots.input.value=[...new Set([...roots.input.value.split('\n').map(p=>p.trim()).filter(Boolean),path])].join('\n');roots.input.dispatchEvent(new window.Event('input',{bubbles:true}));}},'quiet');
+-  section('Workspace & provider',[roots.label,browse,coordinator.label,el('p','','Mengganti provider membuka percakapan terpisah. Percakapan lama tetap tersimpan.'),worker.label],'Simpan workspace & provider',()=>({roots:roots.input.value.split('\n').map(p=>p.trim()).filter(Boolean),coordinatorProvider:coordinator.input.value as Settings['coordinatorProvider'],workerProvider:worker.input.value as Settings['workerProvider']}));
++  section('Registrasi & default global',[roots.label,browse,coordinator.label,el('p','','Mengganti provider membuka percakapan terpisah. Percakapan lama tetap tersimpan.'),worker.label],'Simpan workspace & provider',()=>({roots:roots.input.value.split('\n').map(p=>p.trim()).filter(Boolean),coordinatorProvider:coordinator.input.value as Settings['coordinatorProvider'],workerProvider:worker.input.value as Settings['workerProvider']}));
+   const advanced=el('details');advanced.append(el('summary','','Pengaturan lanjutan'));d.append(advanced);
+   const advancedForm=section('Pengaturan lanjutan',[limit.label,claude.label,codex.label],'Simpan lanjutan',()=>({maxWorkers:Number(limit.input.value),claudeModel:claude.input.value,codexModel:codex.input.value}));advanced.append(advancedForm);
+   d.append(button('Jadwal pekerjaan',scheduleList,'quiet settings-extra'));
+ }
+ function historyDialog(){
+-  const d=dialog('Riwayat pekerjaan'),tasks=archive(state.tasks,workspace);
++  const d=dialog('Riwayat pekerjaan'),tasks=[...pmHistory(state.tasks,workspace),...archive(state.tasks,workspace)];
+   if(!tasks.length)d.append(el('p','empty','Pekerjaan yang selesai, gagal, terputus, atau dihentikan akan tersimpan di sini.'));
+-  for(const task of tasks){const row=button('',()=>{d.close();return openTask(task.id);},'history-row'),text=el('div');text.append(el('strong','',task.title),el('small','',`${roleOf(task)} · ${task.provider} · ${task.id.slice(0,8)} · ${new Date(task.updatedAt).toLocaleString('id-ID')}`));row.append(text,badge(task));d.append(row);}
++  for(const task of tasks){const row=button('',()=>{d.close();return openTask(task.id);},'history-row'),text=el('div');text.append(el('strong','',task.title),el('small','',`${task.kind==='pm'?'PM':roleOf(task)} · ${task.provider} · ${task.model||'model default'} · ${task.id.slice(0,8)} · ${new Date(task.updatedAt).toLocaleString('id-ID')}`));row.append(text,badge(task));d.append(row);}
+ }
+ async function openTask(id:string){
+   const task=state.tasks.find(t=>t.id===id);if(!task)return;
+@@ -494,7 +517,7 @@
+ }
+ function scheduleDialog(s?:Schedule){
+   if(!state.settings.roots.length){notify('Tambahkan workspace terlebih dahulu.');return;}
+-  const d=dialog(s?'Ubah jadwal':'Tambah jadwal'),form=el('form'),title=field('Nama',s?.title),prompt=field('Instruksi',s?.prompt,true),cron=field('Cron · menit jam tanggal bulan hari',s?.cron||'0 9 * * 1-5'),timezone=field('Zona waktu',s?.timezone||'Asia/Jakarta'),folder=select('Workspace',state.settings.roots,s?.workspace||workspace),provider=select('Provider',['codex','claude'],s?.provider||state.settings.coordinatorProvider);
++  const d=dialog(s?'Ubah jadwal':'Tambah jadwal'),form=el('form'),title=field('Nama',s?.title),prompt=field('Instruksi',s?.prompt,true),cron=field('Cron · menit jam tanggal bulan hari',s?.cron||'0 9 * * 1-5'),timezone=field('Zona waktu',s?.timezone||'Asia/Jakarta'),folder=select('Workspace',state.settings.roots,s?.workspace||workspace),provider=select('Provider',['codex','claude'],s?.provider||agents().coordinatorProvider);
+   form.append(el('p','','Daemon harus berjalan. Menit terlewat dilewati; run tidak ditumpuk saat sebelumnya aktif/terputus. Contoh: 0 9 * * 1-5 · Senin–Jumat pukul 09.00.'),title.label,prompt.label,cron.label,timezone.label,folder.label,provider.label);const save=el('button','primary','Simpan jadwal');save.type='submit';form.append(save);
+   title.input.required=true;prompt.input.required=true;cron.input.required=true;timezone.input.required=true;
+   form.onsubmit=async event=>{event.preventDefault();if(save.disabled)return;save.disabled=true;try{await api('schedules','POST',{id:s?.id,title:title.input.value,prompt:prompt.input.value,cron:cron.input.value,timezone:timezone.input.value,workspace:folder.input.value,provider:provider.input.value,model:s?.model||'',enabled:s?.enabled??true});d.close();await refresh();}catch(error){form.querySelector('.inline-error')?.remove();form.append(feedback(errorText(error)));}finally{save.disabled=false;}};d.append(form);

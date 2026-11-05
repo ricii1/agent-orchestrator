@@ -1,0 +1,31 @@
+ M README.md
+ M docs/VALIDATION.md
+ M package-lock.json
+ M package.json
+ M scripts/office.mjs
+ M src/adapters/claude.ts
+ M src/adapters/codex.ts
+ M src/engine.ts
+ M src/server.ts
+ M src/types.ts
+ M tests/adapters.test.ts
+ M tests/approval.test.ts
+ M tests/chat.test.ts
+ M tests/core.test.ts
+ M tests/fake-cli.cjs
+ M tests/office-model.test.ts
+ M web/app.ts
+ M web/approval.ts
+ M web/chat.ts
+ M web/model.ts
+ M web/style.css
+?? docs/screenshots/
+?? docs/ux/
+?? scripts/terminal-bridge.py
+?? src/approval-options.ts
+?? src/terminal.ts
+?? tests/approval-options.test.ts
+?? tests/multi-workspace.test.ts
+?? tests/terminal.test.ts
+?? vendor/
+?? web/terminal.ts

@@ -1,0 +1,7 @@
+HEAD 61e27b43188b9b3b753f3fd67275d1158c9986ce
+Files copied before integration:
+c898fe7eeb514f0052f8c15c0170462340c3938f69435e1c551d719242b176e9  /home/ricii/gabut/orchestrator-agent/src/server.ts
+a485e7306cfd9e4273d063e2795b8e630d55fc360549a04968ccaac88b5736de  /home/ricii/gabut/orchestrator-agent/web/format.ts
+ba31777148a2f0ceb52e059cf02a751d32448b270f935ebb03cbf13f747a203c  /home/ricii/gabut/orchestrator-agent/web/app.ts
+a0eb7bfcd0ee9bfc2e4e50ca308b3b8a24f5e640cac947f8ce79b513a63ba6f4  /home/ricii/gabut/orchestrator-agent/tests/core.test.ts
+5f363be30daa65a409e3cc4429891a1489d3e377b46cc6e467aaba2d963f6d65  /home/ricii/gabut/orchestrator-agent/tests/format.test.ts

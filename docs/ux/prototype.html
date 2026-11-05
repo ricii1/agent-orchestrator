@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="id"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; font-src 'none'"><title>Kantor · prototype desain DEMO</title>
+<style>
+:root{--bg:#f5f3ec;--paper:#fffef9;--sage:#e5ebdf;--ink:#263d33;--muted:#5d685e;--line:#d6dace;--green:#355c48;--amber:#76501b;--amber-bg:#f6edd9;--red:#973e35;--focus:#235b88;font-family:Inter,ui-sans-serif,system-ui,-apple-system,sans-serif;color:var(--ink);background:var(--bg);font-size:15px;line-height:1.55;color-scheme:light}*{box-sizing:border-box}body{margin:0}button,input,select,textarea{font:inherit;color:inherit}button,a,summary{touch-action:manipulation}button,.link{cursor:pointer;border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:9px 13px;min-height:44px;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;color:var(--ink);font-weight:550;font-size:14px}button:hover,.link:hover{background:var(--sage);border-color:#93a08c}button:disabled{cursor:default;background:#eeeee7;color:#677166}button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--focus);outline-offset:3px}.primary{background:var(--green);border-color:var(--green);color:#fff}.primary:hover{background:#264735;color:white}.quiet{background:transparent}.danger{color:var(--red)}.small,small{font-size:13px;color:var(--muted)}h1,h2,h3,p{margin:0}h1{font-size:24px;line-height:1.25;letter-spacing:-.6px}h2{font-size:19px;letter-spacing:-.3px}h3{font-size:16px}p+p{margin-top:12px}code,pre,.mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13px}pre{white-space:pre-wrap;overflow-wrap:anywhere;margin:10px 0;padding:12px;background:#eeeee6;border:1px solid var(--line);border-radius:6px;color:#304338}code{overflow-wrap:anywhere}.eyebrow{font-size:12px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted)}.row{display:flex;align-items:center;justify-content:space-between;gap:12px}.actions{display:flex;gap:8px;flex-wrap:wrap}.stack{display:grid;gap:16px}.badge{display:inline-flex;gap:6px;align-items:center;background:var(--sage);color:#35543f;border-radius:5px;padding:3px 8px;font-size:12px;font-weight:650;white-space:nowrap}.badge.wait{background:var(--amber-bg);color:var(--amber)}.badge.error{background:#f7e7df;color:var(--red)}.demo{padding:9px 24px;background:#263d33;color:#f7f4e9;display:flex;gap:16px;align-items:center;justify-content:space-between;font-size:12px;flex-wrap:wrap}.demo nav{display:flex;gap:18px;flex-wrap:wrap}.demo a{color:#fff5cf;text-underline-offset:4px}.shell{display:grid;grid-template-columns:208px minmax(0,1fr);min-height:calc(100dvh - 40px)}.sidebar{background:#eeeee5;border-right:1px solid var(--line);padding:28px 16px;display:flex;flex-direction:column;gap:24px}.brand{font-size:25px;font-weight:750;letter-spacing:-1px;display:flex;align-items:center;gap:12px}.mark{height:18px;width:18px;background:#58745c;box-shadow:5px 0 #aebc9e,0 5px #aebc9e,5px 5px #58745c;margin-right:5px}.workspace{background:#dde6d5;border:1px solid #c1ceba;border-radius:8px;padding:12px;font-size:14px;margin-top:10px}.workspace small{display:block}.side-bottom{margin-top:auto;padding-top:40px}.quota{padding:16px 0;border-bottom:1px solid var(--line);display:grid;gap:7px}.bar{height:6px;background:#d7ddce;border-radius:6px}.bar span{display:block;width:34%;height:6px;background:#537357;border-radius:6px}.sidebar .actions{margin-top:16px}.main{padding:26px 28px 18px;min-width:0}.topbar{display:flex;align-items:center;justify-content:space-between;gap:20px;padding-bottom:20px}.path{font-size:13px;color:var(--muted);overflow-wrap:anywhere;margin-top:6px}.connection{color:var(--green);font-size:13px}.workspace-note{display:flex;gap:12px;align-items:start;padding:12px 16px;border:1px solid #d4d9c9;background:#eeefe4;border-radius:8px;margin-bottom:22px;font-size:13px}.note-symbol{font-weight:700;border:1px solid #8c9b83;border-radius:50%;width:20px;flex-shrink:0;text-align:center}.workgrid{display:grid;grid-template-columns:minmax(0,1fr) 344px;gap:24px;align-items:start}.conversation{background:var(--paper);border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:0 5px 18px #263d3305;min-width:0}.chat-head{padding:18px 22px;border-bottom:1px solid var(--line)}.chat-head .small{margin-top:4px}.transcript{padding:22px;display:grid;gap:22px}.message{max-width:72ch;font-size:15px;line-height:1.65}.message.user{background:#eff1e9;border-radius:10px;padding:14px 16px}.message-label{display:flex;gap:10px;align-items:center;font-size:13px;margin-bottom:8px}.message-label time{margin-left:auto;color:var(--muted);font-size:12px}.avatar{width:25px;height:25px;display:inline-grid;place-items:center;background:var(--sage);border:1px solid #b8c6ad;border-radius:5px;font-size:11px;font-weight:700}.activity{font-size:13px;color:var(--muted);padding:0 0 0 12px;border-left:2px solid #bdcbb2}.decision{margin:0 22px 22px;border:1px solid #c6b17b;background:#fffbef;border-radius:9px;padding:17px}.decision .eyebrow{color:var(--amber);letter-spacing:.8px}.decision h3{margin:8px 0}.decision .actions{margin-top:14px}.decision details{margin-top:12px}.decision .exact{background:#f3efdf;border-color:#ddd5bd}.decision .scope{display:grid;gap:8px;margin-top:12px}.scope button{justify-content:flex-start}.composer{border-top:1px solid var(--line);padding:16px 22px;background:#fafaf4}.composer label{font-size:12px;font-weight:650;display:block;margin-bottom:6px}.composer textarea{resize:vertical;min-height:82px}.composer .row{margin-top:10px}.composer small{max-width:36ch}textarea,input,select{width:100%;border:1px solid #7b8b70;border-radius:7px;background:var(--paper);padding:11px 12px;min-height:44px}textarea{line-height:1.5}label{display:grid;gap:6px;font-size:14px;font-weight:600}.rail{display:grid;gap:18px;min-width:0}.card{border:1px solid var(--line);border-radius:10px;background:var(--paper);overflow:hidden}.card-title{padding:15px 16px;border-bottom:1px solid var(--line)}.office-canvas{display:block;width:100%;height:auto;image-rendering:pixelated;background:#e7e2d7}.people{padding:12px;display:grid;gap:8px}.person{display:flex;align-items:center;gap:10px;justify-content:space-between;text-align:left;background:transparent;padding:10px 8px;border:0;width:100%;border-radius:6px}.person>span:first-child{min-width:0}.person strong,.person small{display:block}.person small{font-weight:400;font-size:12px}.rail-note{padding:0 16px 14px;font-size:12px;color:var(--muted)}.review-row{padding:16px}.review-row p{margin:8px 0 14px;font-size:14px}.review-row button{width:100%}.section-view{display:none;max-width:1020px;margin:auto}.section-view.visible{display:block}.view-intro{margin:6px 0 22px}.settings-grid{display:grid;grid-template-columns:180px minmax(0,1fr);gap:24px}.settings-nav{display:grid;gap:8px;align-content:start}.settings-nav a{justify-content:flex-start}.settings-body{display:grid;gap:20px}.form-card{padding:24px;background:var(--paper);border:1px solid var(--line);border-radius:10px;display:grid;gap:16px}.form-card .description{font-size:14px;color:var(--muted)}fieldset{border:1px solid var(--line);border-radius:8px;padding:16px;margin:0;min-width:0}legend{font-weight:700;padding:0 8px}.mode{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);font-size:14px;font-weight:400;align-items:start}.mode:last-child{border:0}.mode input{width:18px;min-height:18px;height:18px;flex-shrink:0;margin-top:4px;accent-color:var(--green)}.mode strong{display:block}.warn{padding:12px 14px;background:var(--amber-bg);color:var(--amber);border-radius:7px;font-size:14px}.readonly{padding:16px 22px;background:#edf0e5;border-top:1px solid var(--line)}.review-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px}.review-grid .card{padding:22px}.review-grid pre{font-size:13px}.state-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.state-grid .form-card{padding:18px}.state-grid h3{margin-bottom:8px}.state-grid button{margin-top:12px}.terminal{background:#202f28;color:#e4efdc;padding:16px;border-radius:8px}.terminal pre{background:transparent;color:#e4efdc;border:0;padding:0}.terminal .small{color:#d0dfc5}.terminal button{margin-top:10px}.mobile-tools{display:none}.hidden{display:none!important}summary{cursor:pointer;min-height:44px;align-content:center;font-size:13px}dialog{width:min(620px,calc(100% - 32px));max-height:90dvh;overflow:auto;border:1px solid #9eab94;border-radius:12px;background:var(--paper);color:var(--ink);padding:24px}dialog::backdrop{background:#263d3388}dialog h2{margin-bottom:16px}dialog .actions{margin-top:20px}.skip{position:absolute;left:16px;top:-80px;background:var(--paper);padding:12px;z-index:10}.skip:focus{top:8px}#feedback{font-size:13px;color:var(--green);min-height:20px;margin-top:10px}.footer-note{font-size:12px;color:var(--muted);padding:20px 0 0}.office-toggle{display:none}
+@media(min-width:1600px){.main{max-width:1440px;width:100%;margin:auto}.workgrid{grid-template-columns:minmax(0,1fr) 380px}}
+@media(max-width:1199px){.shell{grid-template-columns:176px minmax(0,1fr)}.main{padding:22px}.workgrid{grid-template-columns:minmax(0,1fr)}.rail{grid-template-columns:1fr 1fr}.office-toggle{display:inline-flex}.rail .card:first-child{grid-column:1/-1}.office-wrap{display:none}.office-wrap.open{display:block}.office-canvas{max-width:540px;margin:auto}.people{grid-template-columns:1fr 1fr}.review-grid{grid-template-columns:minmax(0,1fr)}.settings-grid{grid-template-columns:minmax(0,1fr)}.settings-nav{display:flex;flex-wrap:wrap}.topbar{align-items:start}.topbar .actions{max-width:270px}.topbar h1{font-size:22px}}
+@media(max-width:599px){:root{font-size:15px}.demo{padding:9px 16px;gap:6px}.demo nav{gap:12px}.shell{display:block}.sidebar{display:none}.main{padding:16px 12px}.topbar{display:block;padding-bottom:12px}.topbar .actions{max-width:none;margin-top:12px;gap:6px}.topbar .actions button{flex:1;padding:9px 8px}.topbar .actions .connection{flex-basis:100%}.mobile-tools{display:inline-flex}.workspace-note{padding:12px;margin-bottom:16px}.workgrid{gap:16px}.chat-head,.transcript{padding:16px}.chat-head .row{align-items:start;flex-wrap:wrap}.decision{margin:0 12px 16px;padding:13px}.composer{padding:14px 16px}.composer .row{align-items:start}.composer .row small{font-size:12px;max-width:23ch}.composer textarea{font-size:16px}.rail{grid-template-columns:1fr}.people{grid-template-columns:1fr}.rail .card:first-child{grid-column:auto}.form-card{padding:16px}.state-grid{grid-template-columns:1fr}.review-grid .card{padding:16px}.actions>*{max-width:100%}.section-view h1{font-size:22px}dialog{padding:18px}.settings-nav{gap:6px}.settings-nav a{font-size:13px;padding:8px}.composer:focus-within{scroll-margin-bottom:24px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+</style>
+<a class="skip" href="#content">Langsung ke percakapan</a>
+<div class="demo"><span><b>DEMO DESAIN</b> · Data contoh · tanpa provider atau shell</span><nav aria-label="Skenario prototype"><a href="?view=chat">Percakapan</a><a href="?view=settings">Pengaturan</a><a href="?view=recovery">Hasil & pemulihan</a><a href="?view=states">State UI</a></nav></div>
+<div class="shell"><aside class="sidebar"><div class="brand"><span class="mark"></span>kantor<span style="font-size:12px;letter-spacing:0;font-weight:500">lokal</span></div><div><div class="row"><span class="eyebrow">Workspace</span><button class="quiet" data-dialog="folder" aria-label="Tambah workspace">+</button></div><div class="workspace"><b>▣ proyek-dokumentasi</b><small>/demo/proyek-dokumentasi</small></div><button class="quiet" style="margin-top:10px;width:100%" data-dialog="folder">Pilih folder lain</button></div><div class="side-bottom"><div class="row"><span class="eyebrow">Kuota akun</span><button class="quiet" data-demo="Refresh kuota demo selesai." aria-label="Perbarui kuota">↻</button></div><small>Penggunaan seluruh akun</small><div class="quota"><b>Codex</b><div class="row small"><span>5 jam</span><span>34% terpakai</span></div><div class="bar"><span></span></div><small>Reset 4 Nov, 18.00 WIB<br>Diperbarui 16.42 WIB · demo</small></div><div class="quota"><b>Claude</b><small>Tidak tersedia pada demo.<br>Bukan berarti 0% terpakai.</small></div><a class="link quiet" style="width:100%;margin-top:16px" href="?view=settings">⚙ Pengaturan</a></div></aside>
+<main class="main" id="content"><header class="topbar"><div><div class="eyebrow" style="margin-bottom:5px">Ruang kerja aktif</div><h1>proyek-dokumentasi</h1><div class="path">/demo/proyek-dokumentasi</div></div><div class="actions"><span class="connection">● Terhubung · demo</span><button class="mobile-tools" data-dialog="workspace">Workspace</button><a class="link mobile-tools" href="?view=recovery">1 perlu ditinjau</a><button data-dialog="history">Riwayat</button><button data-dialog="terminal">Terminal <span class="badge">1</span></button><a class="link mobile-tools" href="?view=settings" aria-label="Pengaturan">⚙</a></div></header>
+<section id="chat-view"><div class="workspace-note"><span class="note-symbol">i</span><div><b>Freelancer Git mulai dari commit terakhir.</b> Perubahan lokal yang belum di-commit tidak ikut. <button class="quiet" style="min-height:24px;padding:0 4px;font-size:13px;text-decoration:underline;border:0" data-dialog="context">Tentang konteks kerja</button></div></div>
+<div class="workgrid"><section class="conversation" aria-label="Percakapan PM"><header class="chat-head"><div class="row"><div><div class="eyebrow">Percakapan</div><h2>PM <span class="small">· Codex</span></h2><button class="quiet" data-dialog="chooser" style="min-height:30px;padding:0;border:0;font-size:13px;text-decoration:underline">Pilih percakapan</button></div><div class="actions"><span class="badge wait">◷ Menunggu</span><button class="quiet" data-dialog="stop">Hentikan PM</button></div></div><div class="row" style="margin-top:8px"><div class="small">Tujuan dan arahan dikirim melalui PM.</div><button class="quiet" disabled title="Tunggu giliran aktif selesai">/compact</button></div></header><div class="transcript"><article class="message user"><div class="message-label"><b>Kamu</b><time>16.38</time></div><p>Rapikan panduan instalasi agar pengguna baru bisa mulai tanpa kebingungan.</p></article><article class="message"><div class="message-label"><span class="avatar">PM</span><b>PM · Codex</b><time>16.39</time></div><p>Saya minta Penulis docs meninjau langkah instalasi. Setelah selesai, kita tinjau hasil dan perubahan file bersama.</p></article><details class="activity"><summary>Penulis docs membaca panduan instalasi · 16.40</summary><pre>Read /demo/proyek-dokumentasi/README.md</pre></details></div>
+<section class="decision" aria-labelledby="decision-title"><div class="row"><span class="eyebrow">Izin tindakan · 1 menunggu</span><span class="badge wait">Manual</span></div><h3 id="decision-title">Jalankan perintah terminal?</h3><p class="small">Permintaan dari <b>Penulis docs · Codex</b><br>Tugas: Tinjau panduan instalasi <button class="quiet" style="min-height:24px;border:0;padding:0 4px;text-decoration:underline" data-dialog="requester">Buka tugas ↗</button></p><pre class="exact">npm run check</pre><div class="small">Folder eksekusi</div><code>/demo/worktrees/docs-review</code><p class="small" style="margin-top:10px">Perintah ini menjalankan pemeriksaan proyek. Pilih cakupan yang ingin diberikan.</p><div class="actions"><button class="primary" data-demo="Demo: pilihan Izinkan sekali dicatat lokal. Tidak ada perintah dijalankan.">Izinkan sekali</button><button data-demo="Demo: permintaan ditolak lokal.">Tolak</button><button class="quiet" data-demo="Demo: giliran dibatalkan lokal.">Batalkan giliran</button></div><details><summary>Opsi provider lain · 2</summary><div class="scope"><button data-demo="Demo: izin selama sesi dipilih lokal.">Izinkan selama sesi</button><small>Berlaku selama proses Codex ini; giliran berikutnya dapat memakai proses baru.</small><button data-demo="Demo: aturan prefix dipilih lokal.">Selalu izinkan aturan perintah ini</button><pre>["npm","run","check"]</pre><small>Aturan prefix yang ditawarkan provider. Preview ditampilkan persis.</small></div></details><details><summary>Catatan & detail teknis</summary><label>Catatan opsional<textarea rows="2"></textarea></label><pre>{"kind":"item/commandExecution/requestApproval","availableDecisions":["accept","acceptForSession","decline","cancel",{"acceptWithExecpolicyAmendment":{"execpolicy_amendment":["npm","run","check"]}}]}</pre></details></section>
+<form class="composer" id="composer"><label for="goal">Pesan ke PM · Codex · proyek-dokumentasi</label><textarea id="goal" placeholder="Beri tujuan atau arahan lanjutan…" rows="2"></textarea><div class="row"><small>Enter kirim · Shift+Enter baris baru<br><button type="button" class="quiet" style="padding:0;border:0;min-height:26px;font-size:12px;text-decoration:underline" data-dialog="help">Bantuan perintah</button></small><button type="submit" class="primary">Kirim ↑</button></div></form></section>
+<aside class="rail"><section class="card"><div class="card-title row"><div><div class="eyebrow">Kantor pixel</div><h3>Sedang di kantor</h3></div><button class="quiet office-toggle" id="office-toggle" aria-expanded="false">Lihat kantor</button></div><div class="office-wrap" id="office-wrap"></div><div class="people"><button class="person" data-demo="Demo: percakapan PM sedang ditampilkan."><span><strong>PM</strong><small>Codex · percakapan utama</small></span><span class="badge wait">◷ Menunggu</span></button><button class="person" data-dialog="requester"><span><strong>Penulis docs</strong><small>Codex · Tinjau instalasi</small></span><span class="badge wait">◷ Menunggu</span></button></div><p class="rail-note">Freelancer hadir selama tugas aktif. Hasilnya tetap tersimpan di Riwayat.</p></section><section class="card"><div class="card-title row"><h3>Perlu ditinjau</h3><span class="badge wait">1</span></div><div class="review-row"><span class="small">Reviewer · Claude</span><h3 style="margin-top:6px">Audit tautan panduan</h3><p><span class="badge error">↯ Terputus</span></p><p>Aktivitas tersimpan. Tinjau sebelum melanjutkan.</p><a class="link" href="?view=recovery" style="width:100%">Tinjau lalu lanjutkan →</a></div></section><div class="small">Selesai bekerja? <button class="quiet" data-dialog="history" style="border:0;padding:0 4px;min-height:30px;text-decoration:underline">Buka hasil di Riwayat</button></div></aside></div></section>
+<section id="settings-view" class="section-view"><div class="view-intro"><h1>Pengaturan</h1><p class="small">Perubahan disimpan per bagian. Nilai pada halaman ini adalah fixture demo.</p></div><div class="settings-grid"><nav class="settings-nav" aria-label="Bagian pengaturan"><a href="#permissions" class="link" style="background:var(--sage)">Izin global</a><a href="#workspace-settings" class="link quiet">Workspace & provider</a><a href="#advanced" class="link quiet">Lanjutan</a><a href="#schedule" class="link quiet">Jadwal pekerjaan</a></nav><div class="settings-body"><section class="form-card" id="permissions"><div><div class="eyebrow">Berlaku di semua workspace</div><h2>Izin tindakan</h2></div><p class="description">Mengatur PM dan freelancer per provider. Mode ini tidak menjawab pertanyaan atau mengisi form untuk Anda.</p><fieldset><legend>Codex</legend><label class="mode"><input type="radio" name="codex-mode" value="manual" checked><span><strong>Manual</strong>Minta keputusan saat provider memerlukan izin.</span></label><label class="mode"><input type="radio" name="codex-mode" value="auto"><span><strong>Otomatis</strong>Izinkan sekali permintaan tindakan tanpa klik, termasuk yang sedang menunggu. Tidak membuat aturan permanen otomatis. Batas paksa provider tetap berlaku.</span></label><label class="mode"><input type="radio" name="codex-mode" value="full"><span><strong>Akses penuh · berisiko</strong>Codex memakai never + danger-full-access. Agent berjalan dengan hak user laptop; sandbox provider dinonaktifkan.</span></label></fieldset><label>Claude<select id="claude-mode"><option value="manual">Manual</option><option value="auto">Otomatis</option><option value="full">Akses penuh · berisiko</option></select></label><p class="description">Claude Akses penuh memakai dangerously-skip-permissions tanpa sandbox. Perubahan dari atau ke Akses penuh memerlukan agent provider terkait selesai/dihentikan.</p><div class="warn" id="mode-summary"><b>Ringkasan perubahan</b><br>Codex: Manual → Manual · Claude: Manual → Manual<br>Berlaku di semua workspace.</div><div class="actions"><button class="primary" id="save-permissions">Simpan izin</button></div><small>Tidak ada penyimpanan di prototype. Pada aplikasi, tampilkan sukses hanya setelah nilai server sesuai.</small></section><section class="form-card" id="workspace-settings"><h2>Workspace & provider</h2><label>Folder workspace · satu path lengkap per baris<textarea rows="2">/demo/proyek-dokumentasi</textarea></label><button data-dialog="folder">Pilih folder…</button><label>Provider PM<select><option>Codex</option><option>Claude</option></select></label><p class="description">Mengganti provider membuka percakapan terpisah. Percakapan lama tetap tersimpan.</p><label>Default freelancer<select><option>Claude</option><option>Codex</option></select></label><div class="warn">Selesaikan atau hentikan agent dan terminal aktif sebelum mengubah bagian ini.</div><button disabled>Simpan workspace & provider</button></section><section class="form-card" id="advanced"><h2>Lanjutan</h2><label>Freelancer bersamaan · 1–10<input type="number" min="1" max="10" value="3"></label><label>Model Claude<input placeholder="Kosong = default provider"></label><label>Model Codex<input placeholder="Kosong = default provider"></label><button disabled>Simpan lanjutan</button><small>Terblokir selama agent atau terminal aktif.</small></section><section class="form-card" id="schedule"><h2>Jadwal pekerjaan</h2><div class="row"><strong>Audit docs mingguan</strong><span class="badge">Aktif · demo</span></div><code>0 9 * * 1-5 · Asia/Jakarta</code><p class="description">Contoh: Senin–Jumat pukul 09.00. Daemon harus berjalan; menit terlewat dilewati. Run tidak ditumpuk saat run sebelumnya aktif atau terputus.</p><div class="actions"><button data-dialog="schedule">Tambah jadwal</button><button data-dialog="schedule">Ubah</button><button data-demo="Demo: jadwal dijeda lokal.">Jeda</button><button class="danger" data-demo="Demo: tidak ada jadwal dihapus.">Hapus</button></div></section></div></div></section>
+<section id="recovery-view" class="section-view"><div class="view-intro"><a href="?view=chat" class="link quiet">← Kembali ke PM</a><h1 style="margin-top:16px">Audit tautan panduan</h1><p class="small">Reviewer · Claude · diperbarui 4 Nov, 16.30 WIB · demo</p></div><div class="review-grid"><div class="stack"><section class="form-card"><div class="row"><h2>Aktivitas perlu ditinjau</h2><span class="badge error">↯ Terputus</span></div><p>Sesi terputus. Riwayat tetap tersedia. Tidak ada kelanjutan otomatis; tinjau log dan perubahan sebelum melanjutkan.</p><div class="warn">Izin lama kedaluwarsa setelah pemulihan. Permintaan izin baru, jika ada, perlu diputuskan kembali.</div><div><span class="eyebrow">Ringkasan hasil</span><p>Belum ada hasil akhir pada fixture ini.</p></div><div class="actions"><button class="primary" data-demo="Demo: resume dipilih lokal. Tidak ada provider dijalankan.">Lanjutkan Reviewer</button><button data-dialog="diff">Tinjau perubahan</button></div></section><section class="conversation"><header class="chat-head row"><h2>Log Reviewer</h2><span class="badge">Hanya-baca</span></header><div class="transcript"><button class="quiet" data-demo="Demo: tidak ada pesan tambahan.">Muat pesan sebelumnya</button><article class="message user"><div class="message-label"><b>Instruksi PM</b><time>16.25</time></div><p>Periksa tautan dan perintah instalasi. Laporkan hasil pemeriksaan.</p></article><article class="message"><div class="message-label"><b>Reviewer · Claude</b><time>16.29</time></div><p>Saya menemukan tautan panduan yang perlu diperiksa. Pengecekan belum selesai.</p></article><details class="activity"><summary>Output tool · exit 0</summary><pre>[DEMO] 12 tautan ditemukan.</pre></details></div><div class="readonly"><b>Log freelancer hanya-baca.</b><p class="small">Untuk memberi arahan, kembali ke percakapan PM.</p><a href="?view=chat" class="link primary" style="margin-top:12px">Kembali ke PM</a></div></section></div><aside class="stack"><section class="form-card"><h3>Konteks eksekusi</h3><label>Workspace asal<code>/demo/proyek-dokumentasi</code></label><label>Folder kerja<code>/demo/worktrees/link-audit</code></label><label>Branch<code>worker/demo-link-audit</code></label><label>Base commit<code>demo-base-commit</code></label><small>Nilai contoh, bukan hasil membaca Git lokal.</small></section><section class="form-card"><h3>Hasil selesai lainnya</h3><span class="badge">✓ Selesai</span><strong>Ringkasan instalasi</strong><p class="small">Selesai bukan berarti sudah digabung.</p><button data-dialog="result">Buka hasil</button><button data-dialog="diff">Tinjau diff</button></section></aside></div></section>
+<section id="states-view" class="section-view"><div class="view-intro"><h1>State & interaksi</h1><p class="small">Katalog fixture terpisah, bukan status simultan. Buka dialog untuk meninjau detail.</p></div><div class="state-grid"><section class="form-card"><div class="eyebrow">Mulai</div><h3>Belum ada workspace</h3><p>Pilih folder proyek agar PM punya konteks kerja.</p><button data-dialog="folder">Pilih folder workspace</button></section><section class="form-card"><h3>Apa yang ingin diselesaikan?</h3><p>PM akan memanggil freelancer saat diperlukan.</p><button data-demo="Demo: contoh tujuan dipilih lokal.">Contoh: Tinjau dokumentasi proyek</button></section><section class="form-card"><h3>Memuat percakapan…</h3><div style="height:14px;background:var(--sage);width:85%"></div><div style="height:14px;background:var(--sage);width:62%"></div><small>Belum ditampilkan sebagai percakapan kosong.</small></section><section class="form-card"><h3>Percakapan belum dapat dimuat</h3><p>Draft Anda tetap ada. Coba muat percakapan kembali.</p><button data-demo="Demo: memuat ulang transcript lokal.">Coba lagi</button></section><section class="form-card"><span class="badge wait">◷ Menghubungkan kembali</span><p>Status mungkin tertinggal. Tinjau percakapan setelah terhubung sebelum mengirim ulang.</p></section><section class="form-card"><h3>Status pekerjaan</h3><div class="actions"><span class="badge">◷ Mengantre</span><span class="badge">● Bekerja</span><span class="badge wait">◷ Menunggu</span><span class="badge">✓ Selesai</span><span class="badge error">! Gagal</span><span class="badge error">↯ Terputus</span><span class="badge">■ Dihentikan</span></div><small>Status berasal dari Task.status; alasan menunggu hanya bila data tersedia.</small></section><section class="form-card"><div class="eyebrow">Pertanyaan · Penulis docs · Claude</div><h3>Panduan ditujukan untuk siapa?</h3><p>Pilihan mengisi jawaban. Tekan Kirim jawaban untuk mengirim.</p><div class="actions"><button data-fill="Pengguna baru">Pengguna baru</button><button data-fill="Kontributor">Kontributor</button></div><label>Jawaban<textarea id="answer" rows="2"></textarea></label><button class="primary" data-demo="Demo: jawaban hanya dicatat lokal.">Kirim jawaban</button></section><section class="form-card"><div class="eyebrow">Izin membuka pertanyaan · PM · Codex</div><h3>Izinkan pertanyaan ini?</h3><p>Izin ini membuka pertanyaan berikut. Jawab setelah ditampilkan; pekerjaan belum disetujui.</p><button data-demo="Demo: izin membuka pertanyaan dipilih.">Tampilkan pertanyaan</button></section><section class="form-card"><div class="eyebrow">Form · PM · Codex</div><h3>Konfirmasi permintaan</h3><p class="small">Isi JSON sesuai requestedSchema. Contoh schema demo: {"type":"object","properties":{"audience":{"type":"string"}},"required":["audience"]}</p><label>Jawaban JSON<textarea id="json-answer" aria-describedby="json-error" aria-invalid="true" rows="2">{"audience": }</textarea></label><p id="json-error" style="color:var(--red)">JSON belum valid. Contoh: {"audience":"pemula"}</p><button id="json-submit">Konfirmasi</button></section><section class="form-card"><h3>Riwayat masih kosong</h3><p>Pekerjaan yang selesai, gagal, terputus, atau dihentikan akan tersimpan di sini.</p><span class="badge">■ Dihentikan</span><p class="small">Tugas dihentikan. Tinjau aktivitas jika ingin melanjutkan.</p></section><section class="form-card"><h3>Kuota akun</h3><p>Memuat kuota…</p><p>Tidak tersedia — alasan dari provider.</p><p><b>Data terakhir · kedaluwarsa</b><br>34% terpakai · diperbarui 16.42 WIB</p><button data-demo="Demo: refresh kuota lokal.">Perbarui kuota</button></section><section class="form-card"><h3>Terminal</h3><p>Membuka shell… / Aktif / Tersembunyi / Berakhir / Koneksi terputus</p><p class="small">State alternatif dari status sesi atau request lokal; bukan mode backend baru.</p><button data-dialog="terminal">Lihat terminal demo</button></section><section class="form-card"><div class="eyebrow">Izin jaringan · Reviewer · Codex</div><h3>Izinkan akses jaringan?</h3><code>docs.example.test</code><pre>{"host":"docs.example.test","action":"allow"}</pre><p class="small">Host dan preview aturan tidak diterjemahkan atau disingkat. Fixture tampilan, tidak ada jaringan.</p><button data-demo="Demo: host tidak diakses.">Selalu izinkan host ini</button></section><section class="form-card"><h3>Perubahan izin belum didukung</h3><p>Permintaan ini akan ditolak. Gunakan workspace yang sudah didaftarkan.</p><button data-demo="Demo: permintaan ditutup lokal.">Tutup permintaan</button></section></div></section>
+<p id="feedback" role="status" aria-live="polite"></p><footer class="footer-note">Prototype desain · seluruh percakapan, status, izin, kuota, path dan hasil merupakan data demo. Tidak mengakses API aplikasi.</footer></main></div>
+<dialog id="detail-dialog" aria-labelledby="dialog-title"><h2 id="dialog-title"></h2><div id="dialog-body"></div><div class="actions"><button id="dialog-close">Tutup</button></div></dialog>
+<script>
+const $=s=>document.querySelector(s),view=new URLSearchParams(location.search).get('view')||'chat';
+if(view!=='chat'&&['settings','recovery','states'].includes(view)){$('#chat-view').classList.add('hidden');$('#'+view+'-view').classList.add('visible')}
+const bodies={
+chooser:['Pilih percakapan','<div class="stack"><button data-demo="Demo: PM sedang dipilih.">PM · Codex · Menunggu</button><h3>Sedang bekerja</h3><button data-dialog="requester">Penulis docs · Tinjau instalasi · Codex · Menunggu</button><h3>Riwayat freelancer</h3><a class="link" href="?view=recovery">Reviewer · Audit tautan · Claude · Terputus</a><button data-dialog="result">Penulis docs · Ringkasan instalasi · Selesai</button></div>'],
+context:['Konteks workspace','<p><b>/demo/proyek-dokumentasi</b></p><p>PM memakai workspace yang dipilih. Freelancer Git memakai worktree dari HEAD yang sudah di-commit; perubahan lokal belum ikut. Repository Git baru memerlukan initial commit.</p><p>Untuk folder non-Git yang saling tumpang tindih, tugas berjalan bergantian. Ini panduan statis, bukan pemeriksaan Git otomatis.</p>'],
+folder:['Pilih folder workspace','<div class="stack"><label>Lokasi folder<input value="/demo/proyek-dokumentasi"></label><div class="actions"><button data-demo="Demo folder: navigasi tidak mengakses filesystem.">↑ Naik</button><button data-demo="Demo folder: navigasi tidak mengakses filesystem.">Home</button><button data-demo="Demo folder: navigasi tidak mengakses filesystem.">Buka</button></div><label class="mode"><input type="checkbox"><span>Tampilkan folder tersembunyi</span></label><button data-demo="Demo: membuka subfolder tidak mengakses filesystem.">▸ docs</button><p>Preview fixture. Path lengkap tersedia sebelum dipilih.</p><button class="primary" data-demo="Demo: folder tidak didaftarkan.">Gunakan folder ini</button></div>'],
+workspace:['Workspace & akun','<p><b>proyek-dokumentasi</b><br><code>/demo/proyek-dokumentasi</code></p><p>Kuota seluruh akun: Codex 34% terpakai · reset 18.00 WIB · diperbarui 16.42 WIB (demo). Claude tidak tersedia.</p><div class="actions"><button data-demo="Demo: refresh kuota lokal.">Perbarui kuota</button><button data-dialog="folder">Pilih folder lain</button></div>'],
+history:['Riwayat pekerjaan','<div class="stack"><p>Hasil dan aktivitas tetap tersedia setelah freelancer meninggalkan kantor.</p><a href="?view=recovery" class="link">↯ Audit tautan panduan · Terputus</a><button data-dialog="result">✓ Ringkasan instalasi · Selesai</button><button data-demo="Demo: tugas sengaja dihentikan; tetap tercatat.">■ Eksplorasi panduan · Dihentikan</button></div>'],
+requester:['Penulis docs · Tinjau instalasi','<div class="stack"><span class="badge wait">◷ Menunggu · Codex</span><p>Workspace asal: <code>/demo/proyek-dokumentasi</code></p><p>Folder kerja: <code>/demo/worktrees/docs-review</code></p><p>Log freelancer hanya-baca. Arahan diberikan melalui PM. Permintaan izin tetap menyebut tugas ini meskipun percakapan lain dipilih.</p><a class="link" href="?view=recovery">Lihat contoh log hanya-baca</a></div>'],
+stop:['Hentikan PM dan anak aktif?','<p>Menghentikan PM juga menghentikan freelancer anak yang masih aktif. Riwayat pekerjaan tetap tersimpan. Anda dapat meninjau aktivitas sebelum melanjutkan.</p><button class="danger" data-demo="Demo: tidak ada proses dihentikan.">Hentikan PM & anak aktif</button>'],
+help:['Bantuan perintah','<div class="stack"><p><code>/help</code> — daftar bantuan<br><code>/compact</code> — ringkas sesi terpilih setelah giliran aktif selesai; riwayat aplikasi tetap ada<br><code>/terminal</code> — buka shell workspace<br><code>!perintah</code> — langsung dikirim ke shell, bukan PM</p><p>Output terminal tidak masuk ke konteks PM. Slash command lain belum didukung. Gunakan CLI aslinya di terminal jika diperlukan.</p><button disabled>/compact · tunggu giliran selesai</button></div>'],
+terminal:['Terminal · workspace shell','<p><code>/demo/proyek-dokumentasi</code></p><p>Input langsung ke shell dengan hak user daemon. Output tidak masuk ke PM. Sembunyikan tidak menghentikan shell.</p><div class="terminal"><span class="small">● Aktif · fixture tanpa shell</span><pre>demo@lokal:~/proyek-dokumentasi$ git status\n[DEMO] Output contoh, tidak dieksekusi.\n$ ▋</pre></div><div class="actions"><button id="hide-terminal">Sembunyikan</button><button class="danger" data-demo="Demo: shell tidak dijalankan.">Hentikan terminal</button></div><details><summary>Jika koneksi terputus</summary><p>Input dinonaktifkan. Coba hubungkan kembali ke ID sesi yang sama; jangan otomatis membuka shell baru. Setelah daemon restart, buffer dan sesi tidak dapat dipulihkan.</p></details>'],
+result:['Hasil · Ringkasan instalasi','<span class="badge">✓ Selesai · demo</span><p>Panduan telah disusun menjadi prasyarat, instalasi, penggunaan pertama, dan troubleshooting.</p><p>Artefak yang disebut hasil: <code>README.md</code> (teks fixture; bukan tautan filesystem otomatis).</p><p>Selesai tidak berarti sudah digabung.</p><button data-dialog="diff">Tinjau perubahan</button>'],
+diff:['Tinjau perubahan','<p>Branch: <code>worker/demo-docs</code> · fixture tugas selesai</p><pre>--- README.md\n+++ README.md\n@@ -1 +1 @@\n- Instalasi\n+ Instalasi dan penggunaan pertama</pre><p>Preview file baru terbatas; tidak ada klaim semua file sudah ditampilkan.</p><p>Penggabungan membuat staging/commit perubahan worker lalu merge --no-ff --no-commit pada checkout asal yang bersih. Tinjau dan commit integrasi akhir sendiri. Konflik/worktree dipertahankan; git merge --abort membatalkan integrasi yang belum selesai.</p><button class="primary" data-dialog="merge">Gabungkan ke checkout…</button>'],
+merge:['Setujui penggabungan?','<p>Anda menyetujui commit perubahan worker dan penggabungan ke checkout asal. Checkout asal harus bersih. Merge akhir masih perlu Anda tinjau dan commit.</p><p>Prototype tidak memeriksa Git dan tidak melakukan penggabungan.</p><button class="primary" data-demo="Demo: tidak ada commit atau merge dilakukan.">Setujui & gabungkan</button>'],
+full:['Simpan perubahan izin global?','<p>Periksa ringkasan sebelum melanjutkan:</p><pre id="confirm-modes"></pre><p>Akses penuh menonaktifkan sandbox provider dan melewati izin provider. Agent berjalan dengan hak user laptop. Berlaku untuk PM dan freelancer di semua workspace.</p><p>Perubahan dari atau ke Akses penuh memerlukan provider terkait idle. UI tidak menghentikan agent otomatis.</p><button class="danger" data-demo="Demo: mode tidak disimpan dan tidak ada izin diberikan.">Simpan perubahan izin</button>'],
+schedule:['Jadwal pekerjaan','<div class="stack"><label>Nama<input value="Audit docs mingguan"></label><label>Instruksi<textarea rows="2">Tinjau dokumentasi dan laporkan hasil.</textarea></label><label>Cron · menit jam tanggal bulan hari<input value="0 9 * * 1-5"></label><small>Contoh Senin–Jumat 09.00. Cron numerik lima field.</small><label>Zona waktu<input value="Asia/Jakarta"></label><label>Workspace<select><option>/demo/proyek-dokumentasi</option></select></label><label>Provider<select><option>Codex</option><option>Claude</option></select></label><button data-demo="Demo: jadwal tidak disimpan.">Simpan jadwal</button></div>']
+};
+let returnFocus;function openDialog(key){const data=bodies[key];if(!data)return;const d=$('#detail-dialog');if(!d.open){returnFocus=document.activeElement;d.showModal()}$('#dialog-title').textContent=data[0];$('#dialog-body').innerHTML=data[1];if(key==='full')$('#confirm-modes').textContent=summary();$('#dialog-close').focus()}
+function closeDialog(){$('#detail-dialog').close();returnFocus?.focus()}$('#dialog-close').onclick=closeDialog;$('#detail-dialog').addEventListener('cancel',()=>setTimeout(()=>returnFocus?.focus(),0));
+document.addEventListener('click',e=>{const b=e.target.closest('[data-dialog],[data-demo],[data-fill],#hide-terminal');if(!b)return;if(b.dataset.dialog)openDialog(b.dataset.dialog);if(b.dataset.demo){$('#feedback').textContent=b.dataset.demo;if(b.closest('dialog')){let n=$('#dialog-feedback');if(!n){n=document.createElement('p');n.id='dialog-feedback';n.setAttribute('role','status');$('#dialog-body').append(n)}n.textContent=b.dataset.demo}}if(b.dataset.fill){$('#answer').value=b.dataset.fill;$('#answer').focus()}if(b.id==='hide-terminal'){closeDialog();$('#feedback').textContent='Terminal demo tersembunyi; shell tetap aktif pada aplikasi nyata.'}});
+$('#composer').onsubmit=e=>{e.preventDefault();$('#feedback').textContent='Demo: pesan tidak dikirim. Draft tetap tersedia di halaman ini.'};$('#goal').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();$('#composer').requestSubmit()}};
+$('#office-toggle').onclick=()=>{const open=$('#office-wrap').classList.toggle('open');$('#office-toggle').setAttribute('aria-expanded',open);$('#office-toggle').textContent=open?'Lipat kantor':'Lihat kantor'};
+const modeName={manual:'Manual',auto:'Otomatis',full:'Akses penuh'};function summary(){return 'Codex: Manual → '+modeName[$('input[name="codex-mode"]:checked').value]+'\nClaude: Manual → '+modeName[$('#claude-mode').value]+'\nBerlaku di semua workspace.'}document.querySelectorAll('[name="codex-mode"],#claude-mode').forEach(x=>x.onchange=()=>{$('#mode-summary').textContent=summary()});$('#save-permissions').onclick=()=>{if($('input[name="codex-mode"]:checked').value==='full'||$('#claude-mode').value==='full')openDialog('full');else $('#feedback').textContent='Demo: izin tidak disimpan. '+summary()};
+$('#json-submit').onclick=()=>{try{JSON.parse($('#json-answer').value);$('#json-error').textContent='Demo: sintaks JSON valid; validasi schema/server tetap diperlukan.';$('#json-answer').setAttribute('aria-invalid','false')}catch{$('#json-error').textContent='JSON belum valid. Contoh: {"audience":"pemula"}';$('#json-answer').focus()}};
+</script>
+<!-- Renderer Canvas asli web/office.ts, ditranspilasi dan disalin untuk fixture mandiri; tidak mengimpor aplikasi/API. -->
+<script id="original-office">const W = 720, H = 420;
+const colors = ['#557dcb', '#bd7650', '#7c7ea3', '#6b947e', '#bc7d9c', '#9a8849'];
+const seatPosition = (seat) => ({ x: 170 + (seat % 3) * 178, y: 180 + Math.floor(seat / 3) * 104 });
+class PixelOffice {
+    select;
+    canvas = document.createElement('canvas');
+    actors = new Map();
+    frame = 0;
+    last = 0;
+    disposed = false;
+    reduced = matchMedia('(prefers-reduced-motion: reduce)');
+    constructor(select) {
+        this.select = select;
+        this.canvas.width = W;
+        this.canvas.height = H;
+        this.canvas.className = 'office-canvas';
+        this.canvas.setAttribute('role', 'img');
+        this.canvas.onclick = event => {
+            const rect = this.canvas.getBoundingClientRect(), x = (event.clientX - rect.left) * W / rect.width, y = (event.clientY - rect.top) * this.canvas.height / rect.height;
+            for (const a of this.actors.values())
+                if (!a.leaving && Math.abs(x - a.x) < 62 && Math.abs(y - a.y) < 45) {
+                    this.select(a.agent.id);
+                    return;
+                }
+        };
+        document.addEventListener('visibilitychange', this.visibility);
+        this.reduced.addEventListener('change', this.visibility);
+        this.draw(0);
+    }
+    visibility = () => { if (document.hidden) {
+        cancelAnimationFrame(this.frame);
+        this.frame = 0;
+    }
+    else
+        this.wake(); };
+    update(agents) {
+        const ids = new Set(agents.map(a => a.id));
+        for (const actor of this.actors.values())
+            if (!ids.has(actor.agent.id)) {
+                actor.leaving = true;
+                actor.tx = 675;
+                actor.ty = this.canvas.height - 66;
+            }
+        for (const agent of agents) {
+            const old = this.actors.get(agent.id);
+            if (old) {
+                old.agent = agent;
+                old.leaving = false;
+                const p = agent.pm ? { x: 360, y: 88 } : seatPosition(old.seat);
+                old.tx = p.x;
+                old.ty = p.y;
+                continue;
+            }
+            const used = new Set([...this.actors.values()].filter(a => !a.agent.pm && !a.leaving).map(a => a.seat));
+            let seat = 0;
+            while (used.has(seat))
+                seat++;
+            const position = agent.pm ? { x: 360, y: 88 } : seatPosition(seat);
+            this.actors.set(agent.id, { agent, seat, x: agent.pm ? position.x : 675, y: agent.pm ? position.y : this.canvas.height - 66, tx: position.x, ty: position.y, leaving: false });
+        }
+        this.canvas.setAttribute('aria-label', 'Kantor pixel: ' + agents.map(a => `${a.name}, ${a.provider}, ${a.status}`).join('; ') + '. Pilih orang melalui daftar di bawah kantor.');
+        this.draw(performance.now());
+        this.wake();
+    }
+    wake() { if (!this.frame && !document.hidden && !this.disposed)
+        this.frame = requestAnimationFrame(this.tick); }
+    tick = (now) => {
+        this.frame = 0;
+        if (now - this.last >= 100) {
+            this.draw(now);
+            this.last = now;
+        }
+        const moving = [...this.actors.values()].some(a => a.x !== a.tx || a.y !== a.ty || a.agent.status === 'running');
+        if (moving && !this.reduced.matches)
+            this.wake();
+    };
+    draw(now) {
+        const seats = Math.max(3, ...[...this.actors.values()].filter(a => !a.agent.pm).map(a => a.seat + 1));
+        const height = H + Math.max(0, Math.ceil(seats / 3) - 2) * 104;
+        if (this.canvas.height !== height)
+            this.canvas.height = height;
+        const ctx = this.canvas.getContext('2d');
+        if (!ctx)
+            return;
+        ctx.imageSmoothingEnabled = false;
+        const rect = (x, y, w, h, color) => { ctx.fillStyle = color; ctx.fillRect(Math.round(x), Math.round(y), w, h); };
+        const text = (value, x, y, color = '#5e584e', size = 10) => { ctx.fillStyle = color; ctx.font = `${size}px monospace`; ctx.textAlign = 'center'; ctx.fillText(value, x, y); };
+        rect(0, 0, W, height, '#e7e2d7');
+        rect(28, 20, 664, height - 62, '#d3c4a7');
+        for (let y = 20; y < height - 42; y += 24) {
+            rect(28, y, 664, 1, '#bfaf92');
+            for (let x = 28 + (y % 48 ? 40 : 0); x < 692; x += 80)
+                rect(x, y, 1, 24, '#bfaf92');
+        }
+        rect(28, 20, 664, 57, '#ebe4d6');
+        rect(28, 73, 664, 5, '#8d806d');
+        rect(28, 78, 664, 3, '#a4947d');
+        rect(25, 18, 3, height - 60, '#887b68');
+        rect(692, 18, 3, height - 60, '#887b68');
+        rect(25, height - 42, 670, 6, '#887b68');
+        // Window, shelves, noticeboard and doorway are original code-drawn pixel furniture.
+        rect(80, 29, 116, 39, '#8b806d');
+        rect(84, 32, 108, 31, '#9db8b0');
+        rect(90, 36, 96, 23, '#c4d7cd');
+        rect(136, 32, 4, 31, '#8b806d');
+        rect(84, 46, 108, 3, '#8b806d');
+        rect(528, 32, 112, 33, '#c0ad86');
+        rect(531, 35, 106, 27, '#d4be90');
+        rect(540, 40, 22, 15, '#f7efd6');
+        rect(570, 39, 24, 18, '#e5e9e1');
+        rect(605, 42, 21, 12, '#efcfad');
+        rect(660, height - 102, 32, 60, '#6c675b');
+        rect(663, height - 99, 26, 57, '#a89b80');
+        rect(666, height - 95, 20, 40, '#817966');
+        rect(668, height - 69, 3, 3, '#e1c58d');
+        const plant = (x, y) => { rect(x + 6, y + 18, 14, 15, '#9d775a'); rect(x + 3, y + 15, 20, 5, '#b28b66'); rect(x + 9, y, 8, 22, '#64846a'); rect(x, y + 6, 12, 10, '#77977a'); rect(x + 16, y + 4, 11, 12, '#54745b'); };
+        plant(44, 91);
+        plant(641, 89);
+        plant(48, height - 91);
+        rect(74, height - 120, 65, 22, '#7c715e');
+        rect(77, height - 118, 59, 17, '#c1c3ac');
+        rect(77, height - 98, 5, 8, '#7c715e');
+        rect(129, height - 98, 5, 8, '#7c715e');
+        rect(279, height - 78, 166, 29, '#b7b29d');
+        for (let x = 283; x < 442; x += 8)
+            rect(x, height - 75, 4, 23, '#c6c0aa');
+        text('KANTOR FREELANCER', 360, 44, '#766d5f', 10);
+        const desk = (x, y, occupied, pm = false) => {
+            rect(x - 49, y + 10, 100, 35, '#b28b60');
+            rect(x - 49, y + 10, 100, 4, '#d1ae7c');
+            rect(x - 49, y + 43, 100, 5, '#896c4b');
+            rect(x - 43, y + 48, 6, 13, '#896c4b');
+            rect(x + 38, y + 48, 6, 13, '#896c4b');
+            rect(x + 10, y + 1, 29, 22, '#535d5c');
+            rect(x + 13, y + 4, 23, 15, occupied ? '#c0d0c2' : '#768380');
+            rect(x + 22, y + 23, 5, 7, '#535d5c');
+            rect(x + 15, y + 29, 20, 3, '#7a8078');
+            rect(x - 34, y + 22, 18, 12, '#eee5cf');
+            rect(x - 32, y + 25, 13, 1, '#c7b99e');
+            rect(x - 32, y + 28, 9, 1, '#c7b99e');
+            rect(x - 4, y + 28, 7, 8, '#ede0c2');
+            rect(x + 3, y + 30, 3, 4, '#ede0c2');
+            if (!occupied)
+                text(pm ? 'PM' : 'tersedia', x, y + 73, '#8b806e', 9);
+        };
+        desk(360, 88, true, true);
+        const workerCount = [...this.actors.values()].filter(a => !a.agent.pm && !a.leaving).length;
+        const visibleSeats = seats;
+        for (let i = 0; i < visibleSeats; i++) {
+            const p = seatPosition(i);
+            desk(p.x, p.y, [...this.actors.values()].some(a => !a.leaving && a.seat === i && !a.agent.pm));
+        }
+        let departed = false;
+        for (const [id, a] of this.actors) {
+            if (this.reduced.matches) {
+                a.x = a.tx;
+                a.y = a.ty;
+            }
+            else {
+                const dx = a.tx - a.x, dy = a.ty - a.y, distance = Math.hypot(dx, dy), speed = 15;
+                if (distance <= speed) {
+                    a.x = a.tx;
+                    a.y = a.ty;
+                }
+                else {
+                    a.x += dx / distance * speed;
+                    a.y += dy / distance * speed;
+                }
+            }
+            if (a.leaving && a.x === a.tx && a.y === a.ty) {
+                this.actors.delete(id);
+                departed = true;
+                continue;
+            }
+            const walking = a.x !== a.tx || a.y !== a.ty, step = !this.reduced.matches && (walking || a.agent.status === 'running') ? Math.floor(now / 240) % 2 : 0;
+            const x = Math.round(a.x - 18), y = Math.round(a.y - 18), color = a.agent.pm ? '#5d786e' : colors[a.seat % colors.length];
+            rect(x - 3, y + 38, 37, 4, '#b5a58d');
+            rect(x + 1, y + 3, 27, 12, '#514c43');
+            rect(x + 4, y + 12, 21, 15, '#dbb38c');
+            rect(x + 3, y + 9, 6, 12, '#514c43');
+            rect(x + 19, y + 9, 9, 6, '#514c43');
+            rect(x + 10, y + 17, 3, 3, '#514c43');
+            rect(x + 21, y + 17, 3, 3, '#514c43');
+            rect(x + 1, y + 27, 30, 15, color);
+            rect(x - 2, y + 29 + step * 2, 5, 12, '#dbb38c');
+            rect(x + 29, y + 29 - step * 2, 5, 12, '#dbb38c');
+            rect(x + 4, y + 42, 9, 6 - step * 2, '#545b61');
+            rect(x + 19, y + 42, 9, 4 + step * 2, '#545b61');
+            if (a.agent.status === 'waiting') {
+                rect(x + 26, y - 10, 15, 16, '#faf2df');
+                text('!', x + 34, y + 2, '#a86b37', 12);
+            }
+            if (!walking && !a.leaving) {
+                text(a.agent.name.slice(0, 20), a.x, a.y + 69, '#4c514c', 10);
+                text(a.agent.provider, a.x, a.y + 82, '#8b806e', 8);
+            }
+        }
+        if (!workerCount)
+            text('Freelancer datang saat ada pekerjaan.', 360, 289, '#817966', 10);
+        if (departed)
+            this.draw(now);
+    }
+}
+
+const office = new PixelOffice(id=>id==='pm'?document.querySelector('#goal').focus():openDialog('requester'));document.querySelector('#office-wrap').append(office.canvas);office.update([{id:'pm',name:'PM',provider:'codex',status:'waiting',pm:true},{id:'demo-docs',name:'Penulis docs',provider:'codex',status:'waiting'}]);</script>
+</html>

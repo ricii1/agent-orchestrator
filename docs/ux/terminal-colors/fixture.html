@@ -1,0 +1,22 @@
+<!doctype html><html lang="id"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Isolated terminal color check</title><link rel="stylesheet" href="/web/style.css"><body><script type="module">
+import {TerminalPanel} from '/web/terminal.ts';
+window.inputs=[];window.errors=[];window.queue=[];
+const sample='\x1b[32m❯\x1b[0m echo\x1b[38;5;8m suggestion-demo\x1b[0m\r\n'+
+'Actual input: \x1b[0mecho hello\r\n'+
+'ANSI fg8: \x1b[38;5;8mghost suggestion\x1b[0m\r\n'+
+'ANSI fg240: \x1b[38;5;240mexplicit shell gray\x1b[0m\r\n'+
+'SGR dim: \x1b[2mdim text\x1b[0m\r\n'+
+'\x1b[31mred \x1b[32mgreen \x1b[33myellow \x1b[34mblue \x1b[35mmagenta \x1b[36mcyan\x1b[0m\r\n'+
+'Glyphs: Agjpqy _ | ❯ → ✓ café 日本語\r\n';
+const real=new URLSearchParams(location.search).has('real');
+const captures=real?await(await fetch('./zsh-capture.json')).json():null;
+const decode=s=>new TextDecoder().decode(Uint8Array.from(atob(s),c=>c.charCodeAt(0)));
+let input='',cursor=0;
+const api=async(path,method,body)=>{
+ if(method==='POST'){if(body.action==='input'){inputs.push(body.data);if(real){input+=body.data;if(input==='echo')queue.push(decode(captures.typing));if(body.data==='\r'){queue.push(decode(captures.enter));input='';}}return;}if(body.action==='resize'){window.lastResize=body;return;}return {id:'isolated'};}
+ const chunks=queue.splice(0);return {cursor:cursor+=chunks.length,chunks:chunks.map(s=>({data:btoa(String.fromCharCode(...new TextEncoder().encode(s)))})),exitCode:null};
+};
+queue.push(real?decode(captures.initial):sample+'\x1b[38;2;120;160;200mTruecolor RGB\x1b[0m\r\n'+Array.from({length:16},(_,i)=>`\x1b[38;5;${i}m ${i} \x1b[0m`).join('')+'\r\n');
+window.panel=new TerminalPanel('/isolated/demo',api,e=>errors.push(String(e)));
+await panel.show();window.ready=true;
+</script></body></html>

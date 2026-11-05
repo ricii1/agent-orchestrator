@@ -1,0 +1,183 @@
+{
+  "fixture": true,
+  "checks": [
+    {
+      "name": "Provider draft isolation with real settings API",
+      "status": "pass"
+    },
+    {
+      "name": "Same-basename workspace paths and draft isolation",
+      "status": "pass"
+    },
+    {
+      "name": "Section save does not persist other unsaved fields",
+      "status": "pass"
+    },
+    {
+      "name": "Permission save merges latest unrelated server settings",
+      "status": "pass"
+    },
+    {
+      "name": "Saving another section retains conflict detection for unsaved advanced fields",
+      "status": "pass"
+    },
+    {
+      "name": "Full access dismissal does not save",
+      "status": "pass"
+    },
+    {
+      "name": "Full access saves only after explicit confirmation",
+      "status": "pass"
+    },
+    {
+      "name": "Full access blocked for running provider without auto-stop",
+      "status": "pass"
+    },
+    {
+      "name": "Manual-auto remains available while provider running",
+      "status": "pass"
+    },
+    {
+      "name": "Settings failure inline, dialog and selection retained",
+      "status": "pass"
+    },
+    {
+      "name": "Concurrent same-section update is reported before save",
+      "status": "pass"
+    },
+    {
+      "name": "Question option fills only; no automatic decision",
+      "status": "pass"
+    },
+    {
+      "name": "Invalid form retains input with inline error and focus",
+      "status": "pass"
+    },
+    {
+      "name": "Approval SSE redraw preserves invalid answer, focus, selection and error",
+      "status": "pass"
+    },
+    {
+      "name": "Exact command, host and offered scope choices remain visible",
+      "status": "pass"
+    },
+    {
+      "name": "Decision command and invalid JSON form reflow at 320",
+      "status": "pass"
+    },
+    {
+      "name": "Approval failure preserves answer; explicit retry reaches real API once",
+      "status": "pass"
+    },
+    {
+      "name": "Recovery opens result review without resume; worker log readonly and back to PM",
+      "status": "pass"
+    },
+    {
+      "name": "Interrupted task remains in history",
+      "status": "pass"
+    },
+    {
+      "name": "Send failure persistent and input retained, no provider invoked",
+      "status": "pass"
+    },
+    {
+      "name": "Real SSE refresh retains composer focus, selection and old-message scroll",
+      "status": "pass"
+    },
+    {
+      "name": "Older backend capability disables permission controls",
+      "status": "pass"
+    },
+    {
+      "name": "Transcript loading differs from empty; fetch error retries without model call",
+      "status": "pass"
+    },
+    {
+      "name": "Reflow, office fold and dialog Escape 1440",
+      "status": "pass"
+    },
+    {
+      "name": "Reflow, office fold and dialog Escape 768",
+      "status": "pass"
+    },
+    {
+      "name": "Reflow, office fold and dialog Escape 390",
+      "status": "pass"
+    },
+    {
+      "name": "Reflow, office fold and dialog Escape 320",
+      "status": "pass"
+    },
+    {
+      "name": "Mobile quota refresh reachable at 320",
+      "status": "pass"
+    },
+    {
+      "name": "Quota stale keeps real percentage, account scope, visible timestamps/reset and manual cooldown on mobile",
+      "status": "pass"
+    },
+    {
+      "name": "Terminal fixture keeps own workspace, hide != stop, error and same-ID reconnect without new POST",
+      "status": "pass"
+    },
+    {
+      "name": "Missing terminal opens a new shell only after explicit action",
+      "status": "pass"
+    },
+    {
+      "name": "Semantic text, focus and control token contrast meets targets",
+      "status": "pass"
+    }
+  ],
+  "pageErrors": [],
+  "viewports": [
+    1440,
+    768,
+    390,
+    320
+  ],
+  "terminalPosts": 2,
+  "contrast": [
+    {
+      "name": "ink/surface",
+      "ratio": 11.57,
+      "minimum": 4.5
+    },
+    {
+      "name": "muted/surface",
+      "ratio": 5.77,
+      "minimum": 4.5
+    },
+    {
+      "name": "muted/background",
+      "ratio": 5.24,
+      "minimum": 4.5
+    },
+    {
+      "name": "action",
+      "ratio": 7.57,
+      "minimum": 4.5
+    },
+    {
+      "name": "warning",
+      "ratio": 6.15,
+      "minimum": 4.5
+    },
+    {
+      "name": "danger",
+      "ratio": 5.71,
+      "minimum": 4.5
+    },
+    {
+      "name": "focus",
+      "ratio": 7.11,
+      "minimum": 3
+    },
+    {
+      "name": "control boundary",
+      "ratio": 3.6,
+      "minimum": 3
+    }
+  ]
+}

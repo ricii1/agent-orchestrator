@@ -1,0 +1,54 @@
+{
+  "fixture": "temporary registered workspace + temporary SQLite DB + fake adapter; no provider calls",
+  "sourceScreenshot": "docs/ux/office-expanded/evidence/desktop-expanded.png (copied into temp workspace)",
+  "checks": [
+    {
+      "name": "unsafe schemes rejected; inline and fenced code remain literal text",
+      "status": "pass"
+    },
+    {
+      "name": "absolute workspace screenshot link opens loaded PNG in new browser tab",
+      "status": "pass"
+    },
+    {
+      "name": "relative image resolves against selected workspace",
+      "status": "pass"
+    },
+    {
+      "name": "keyboard focus and Enter open the image in a new tab",
+      "status": "pass"
+    },
+    {
+      "name": "missing and symlink-escape tabs show readable backend errors",
+      "status": "pass"
+    },
+    {
+      "name": "no browser runtime errors",
+      "status": "pass"
+    }
+  ],
+  "absolute": {
+    "naturalWidth": 1425,
+    "naturalHeight": 1768,
+    "contentType": "image/png",
+    "status": 200
+  },
+  "relative": {
+    "naturalWidth": 1425,
+    "naturalHeight": 1768,
+    "contentType": "image/png",
+    "status": 200
+  },
+  "keyboardNaturalWidth": 1425,
+  "failureTabs": [
+    {
+      "label": "Gambar hilang",
+      "text": "{\"error\":\"Preview file not found\"}"
+    },
+    {
+      "label": "Gambar terlarang",
+      "text": "{\"error\":\"Preview file is outside this workspace\"}"
+    }
+  ],
+  "pageErrors": []
+}

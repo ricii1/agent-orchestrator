@@ -1,0 +1,45 @@
+vite v6.4.1 building for production...
+transforming...
+✓ 21 modules transformed.
+rendering chunks...
+computing gzip size...
+../../../../../tmp/kantor-docs-UWgDFB/public/index.html                      0.41 kB │ gzip:  0.30 kB
+../../../../../tmp/kantor-docs-UWgDFB/public/assets/terminal-DYP7pi_n.css    4.15 kB │ gzip:  1.68 kB
+../../../../../tmp/kantor-docs-UWgDFB/public/assets/index-B5Oy5Kwl.css      31.72 kB │ gzip:  7.38 kB
+../../../../../tmp/kantor-docs-UWgDFB/public/assets/index-DoqvlBgu.js       60.56 kB │ gzip: 21.82 kB
+../../../../../tmp/kantor-docs-UWgDFB/public/assets/terminal-C_ACcewJ.js   297.60 kB │ gzip: 74.66 kB
+✓ built in 1.79s
+PASS Provider draft isolation with real settings API
+PASS Same-basename workspace paths and draft isolation
+PASS Section save does not persist other unsaved fields
+PASS Permission save merges latest unrelated server settings
+PASS Saving another section retains conflict detection for unsaved advanced fields
+PASS Full access dismissal does not save
+PASS Full access saves only after explicit confirmation
+PASS Full access blocked for running provider without auto-stop
+PASS Manual-auto remains available while provider running
+PASS Settings failure inline, dialog and selection retained
+PASS Concurrent same-section update is reported before save
+PASS Question option fills only; no automatic decision
+PASS Invalid form retains input with inline error and focus
+PASS Approval SSE redraw preserves invalid answer, focus, selection and error
+PASS Exact command, host and offered scope choices remain visible
+PASS Decision command and invalid JSON form reflow at 320
+PASS Approval failure preserves answer; explicit retry reaches real API once
+PASS Recovery opens result review without resume; worker log readonly and back to PM
+PASS Interrupted task remains in history
+PASS Send failure persistent and input retained, no provider invoked
+PASS Real SSE refresh retains composer focus, selection and old-message scroll
+PASS Older backend capability disables permission controls
+PASS Transcript loading differs from empty; fetch error retries without model call
+PASS Reflow, office fold and dialog Escape 1440
+PASS Reflow, office fold and dialog Escape 768
+PASS Reflow, office fold and dialog Escape 390
+PASS Reflow, office fold and dialog Escape 320
+PASS Mobile quota refresh reachable at 320
+PASS Quota stale keeps real percentage, account scope, visible timestamps/reset and manual cooldown on mobile
+PASS Terminal fixture keeps own workspace, hide != stop, error and same-ID reconnect without new POST
+PASS Missing terminal opens a new shell only after explicit action
+PASS Semantic text, focus and control token contrast meets targets
+Acceptance checks: 32 passed.
+Captured 2 real browser screenshots; isolated database, no provider calls, no page errors.

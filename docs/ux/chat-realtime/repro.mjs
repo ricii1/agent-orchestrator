@@ -1,0 +1,148 @@
+// Isolated real-app browser repro. No provider, credentials, or user data.
+// Run: node --import tsx docs/ux/chat-realtime/repro.mjs
+import assert from 'node:assert/strict';
+import {mkdtemp,mkdir,rm,writeFile} from 'node:fs/promises';
+import {tmpdir,homedir} from 'node:os';
+import {join,resolve} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createServer as httpServer,request as httpRequest} from 'node:http';
+import {build} from 'vite';
+import {Store} from '../../../src/store.js';
+import {Engine} from '../../../src/engine.js';
+import {Scheduler} from '../../../src/scheduler.js';
+import {server as appServer} from '../../../src/server.js';
+
+const root=resolve(fileURLToPath(new URL('../../../',import.meta.url)));
+const out=fileURLToPath(new URL('./',import.meta.url));
+const temp=await mkdtemp(join(tmpdir(),'chat-realtime-'));
+const publicDir=join(temp,'public');await mkdir(publicDir);
+const playwright=process.env.CHAT_REALTIME_PLAYWRIGHT||join(homedir(),'.cache/ms-playwright-go/1.50.1/package/index.mjs');
+const chrome=process.env.CHAT_REALTIME_CHROMIUM||join(homedir(),'.cache/ms-playwright/chromium-1223/chrome-linux64/chrome');
+const {chromium}=await import(playwright);
+await build({configFile:false,root:join(root,'web'),logLevel:'error',build:{outDir:publicDir,emptyOutDir:true}});
+
+const dir=join(temp,'runtime');await mkdir(dir);const workspace=join(dir,'workspace');await mkdir(workspace);
+const store=new Store(join(dir,'demo.db'));
+const settings=store.settings();settings.roots=[workspace];store.saveSettings(settings);
+const engine=new Engine(store,{codex:{run(){throw Error('fake adapter must not run');}},claude:{run(){throw Error('fake adapter must not run');}}},dir,'http://127.0.0.1:0');
+const usage={get:async()=>({status:'unavailable',windows:[],updatedAt:null,note:'FIXTURE: disabled'})};
+const backend=appServer(engine,new Scheduler(engine),publicDir,usage);
+await new Promise(ok=>backend.app.listen(0,'127.0.0.1',ok));
+const backendOrigin=`http://127.0.0.1:${backend.app.address().port}`;engine.url=backendOrigin;
+const agents=(await import('../../../src/types.js')).workspaceAgents(store.settings(),workspace);
+const task=store.createTask({prompt:'Fixture chat',title:'PM',kind:'pm',workspace,provider:agents.coordinatorProvider,model:agents.coordinatorProvider==='claude'?agents.claudeModel:agents.codexModel,workerDefaults:agents,status:'running'});
+engine.event(task.id,'created',task);
+
+let streamMode='healthy',dropNextType='',streamSeq=0;
+const activeStreams=new Set();
+const proxy=httpServer((req,res)=>{
+  const u=new URL(req.url,'http://fixture');
+  if(u.pathname==='/api/providers'){
+    res.writeHead(200,{'content-type':'application/json'});res.end(JSON.stringify({codex:{available:false,message:'FIXTURE'},claude:{available:false,message:'FIXTURE'}}));return;
+  }
+  if(u.pathname==='/api/events'){
+    let cursor=Number(u.searchParams.get('after')||0),closed=false;
+    res.writeHead(200,{'content-type':'text/event-stream','cache-control':'no-cache','connection':'keep-alive'});res.flushHeaders();
+    const send=(e,replay=false)=>{
+      if(closed||e.id<=cursor)return;
+      cursor=e.id;
+      const shouldDrop=e.type===dropNextType;
+      if(shouldDrop){dropNextType='';return;}
+      if(streamMode==='hold'&&e.type==='text')return;
+      res.write(`id: ${e.id}\ndata: ${JSON.stringify(e)}\n\n`);
+      logs.push({kind:'sse-write',id:e.id,type:e.type,replay,at:Date.now(),connection:streamSeq});
+    };
+    const conn=++streamSeq;activeStreams.add(res);
+    const flush=()=>{for(const e of store.events(cursor))send(e,true);};
+    const onEvent=e=>send(e,false);engine.on('event',onEvent);flush();
+    const heartbeat=setInterval(()=>{if(!closed)res.write(': heartbeat\n\n');},3000);
+    const cleanup=()=>{if(closed)return;closed=true;clearInterval(heartbeat);engine.off('event',onEvent);activeStreams.delete(res);};
+    res.on('close',cleanup);return;
+  }
+  const headers={...req.headers,host:new URL(backendOrigin).host};if(req.headers.origin)headers.origin=backendOrigin;
+  const upstream=httpRequest(new URL(req.url,backendOrigin),{method:req.method,headers},up=>{res.writeHead(up.statusCode||502,up.headers);up.pipe(res);});
+  upstream.on('error',()=>{if(!res.headersSent)res.writeHead(502);res.end();});req.pipe(upstream);
+});
+await new Promise(ok=>proxy.listen(0,'127.0.0.1',ok));
+const origin=`http://127.0.0.1:${proxy.address().port}`;
+const logs=[];
+let browser;
+const evidence={baseCommit:process.env.CHAT_REALTIME_BASE||'91b73e5a0f10b8855d6d48ba6ecaa0260250c7af',fixture:true,providerInvoked:false,origin,scenarios:[],events:logs};
+const record=(scenario,detail)=>evidence.scenarios.push({scenario,...detail});
+const emit=(type,text)=>{const e=engine.event(task.id,type,{text});logs.push({kind:'server-emit',id:e.id,type,text,at:Date.now()});return e;};
+const taskStatus=status=>{const current=store.task(task.id);current.status=status;store.saveTask(current);const e=engine.event(task.id,'status',{status,error:''});logs.push({kind:'server-emit',id:e.id,type:'status',status,at:Date.now()});return e;};
+try{
+  browser=await chromium.launch({executablePath:chrome,headless:true,args:['--no-sandbox']});
+  const page=await browser.newPage({viewport:{width:1440,height:1000}});const pageErrors=[];page.on('pageerror',e=>pageErrors.push(String(e)));
+  await page.addInitScript(()=>{
+    (window).__rt={receive:[],dom:[]};
+    const Original=ReadableStreamDefaultReader.prototype.read;
+    ReadableStreamDefaultReader.prototype.read=function(...args){return Original.apply(this,args).then(value=>{
+      if(value?.value){try{const chunk=new TextDecoder().decode(value.value);for(const line of chunk.split('\n'))if(line.startsWith('data: ')){const e=JSON.parse(line.slice(6));(window).__rt.receive.push({id:e.id,type:e.type,at:Date.now(),performance:performance.now()});}}catch{}}
+      return value;
+    });};
+    new MutationObserver(()=>{const marker=(window).__rtMarker;if(marker&&document.querySelector('#conversation')?.innerText.includes(marker)&&!(window).__rt.dom.some(x=>x.marker===marker))(window).__rt.dom.push({marker,at:Date.now(),performance:performance.now()});}).observe(document,{subtree:true,childList:true,characterData:true});
+  });
+  await page.goto(origin);await page.locator('#conversation').waitFor();
+  await page.waitForFunction(()=>document.querySelector('.connection')?.textContent==='Terhubung',undefined,{timeout:8000});
+  const send=(marker,type='text')=>page.evaluate(({marker,type})=>{(window).__rtMarker=marker;return window.__emitFixture(marker,type);},{marker,type});
+  await page.exposeFunction('__emitFixture',(marker,type)=>emit(type,marker));
+
+  // Healthy end-to-end: engine emit -> real app fetch reader -> rendered DOM.
+  const healthy='RT_HEALTHY_'+Date.now();const healthyEmit=await send(healthy);
+  await page.getByText(healthy,{exact:true}).waitFor({timeout:5000});
+  const healthyProof=await page.evaluate(id=>({receive:(window).__rt.receive.find(x=>x.id===id),dom:(window).__rt.dom.find(x=>x.marker===window.__rtMarker)}),healthyEmit.id);
+  assert(healthyProof.receive&&healthyProof.dom,'healthy event must be received and rendered');
+  record('healthy SSE emit-receive-DOM',{id:healthyEmit.id,emitAt:logs.find(x=>x.kind==='server-emit'&&x.id===healthyEmit.id).at,receiveAt:healthyProof.receive.at,domAt:healthyProof.dom.at,emitToReceiveMs:healthyProof.receive.at-logs.find(x=>x.kind==='server-emit'&&x.id===healthyEmit.id).at,receiveToDomMs:healthyProof.dom.at-healthyProof.receive.at,passed:true});
+  await page.screenshot({path:join(out,'healthy-stream.png'),fullPage:true});
+
+  // Drop one text frame while preserving status; state polling must not repair transcript.
+  streamMode='healthy';dropNextType='text';const missed='RT_MISSED_'+Date.now();await page.evaluate(marker=>(window).__rtMarker=marker,missed);
+  const missedEmit=await send(missed);const status=taskStatus('waiting');
+  await page.waitForFunction(()=>document.querySelector('.thinking')?.textContent.includes('menunggu'),undefined,{timeout:9000}).catch(()=>{});
+  await page.waitForTimeout(5600);
+  const missedState=await page.evaluate(()=>({status:document.querySelector('.thinking')?.textContent||'',transcript:document.querySelector('#conversation')?.innerText||''}));
+  assert(missedState.status.includes('menunggu'),'polling/state refresh should update task status');
+  assert(!missedState.transcript.includes(missed),'state polling alone must not restore transcript text');
+  record('missed text: state polling does not catch up transcript',{textId:missedEmit.id,statusId:status.id,statusVisible:missedState.status.includes('menunggu'),textVisible:missedState.transcript.includes(missed),waitMs:5600,passed:true,reason:'the 5s refresh fetches /api/state; it does not call loadEvents or replay SSE'});
+  await page.screenshot({path:join(out,'missed-text-state-only.png'),fullPage:true});
+
+  // A full reload replays from cursor zero, but loadEvents first caches a later non-text
+  // event. cacheEvent then rejects older replayed text by comparing against that high ID.
+  const reloadStarted=Date.now();await page.reload();await page.waitForTimeout(1400);
+  const reloadView=await page.evaluate(marker=>({text:document.querySelector('#conversation')?.innerText.includes(marker),receive:(window).__rt.receive,connection:document.querySelector('.connection')?.textContent}),missed);
+  assert.equal(reloadView.text,false,'replay older than fetched non-text high-water mark is discarded');
+  record('manual reload still misses dropped text',{textId:missedEmit.id,latestNonTextId:status.id,receivedOnReplay:reloadView.receive.some(x=>x.id===missedEmit.id),textVisible:reloadView.text,reloadStarted,waitAfterReloadMs:1400,passed:true,mechanism:'loadEvents seeds cache with non-text status id N; cacheEvent drops replay event id < N before checking whether that ID is already cached'});
+  await page.screenshot({path:join(out,'missed-text-after-refresh.png'),fullPage:true});
+
+  // Half-open simulation keeps SSE response open but swallows text; hidden/visible only refreshes state.
+  streamMode='hold';const half='RT_HALFOPEN_'+Date.now();await page.evaluate(marker=>(window).__rtMarker=marker,half);const halfEmit=await send(half);
+  const cdp=await page.context().newCDPSession(page);let browserHidden=false;
+  try{await cdp.send('Emulation.setPageVisibilityState',{visibilityState:'hidden'});await page.waitForFunction(()=>document.hidden,undefined,{timeout:1500});browserHidden=true;}catch{await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));});}
+  taskStatus('running');await page.waitForTimeout(800);
+  if(browserHidden){await cdp.send('Emulation.setPageVisibilityState',{visibilityState:'visible'});await page.waitForFunction(()=>!document.hidden,undefined,{timeout:1500});}
+  else await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'));});
+  await page.waitForTimeout(5600);
+  const halfView=await page.evaluate(marker=>({text:document.querySelector('#conversation')?.innerText.includes(marker),connection:document.querySelector('.connection')?.textContent}),half);
+  assert.equal(halfView.text,false,'held stream event should remain absent');
+  record('half-open plus hidden-visible',{textId:halfEmit.id,browserHidden,textVisible:halfView.text,connectionLabel:halfView.connection,waitAfterVisibleMs:5600,passed:true,interpretation:'fixture reproduces no transcript catch-up while fetch reader remains open; visibility handler refreshes state only'});
+  await page.screenshot({path:join(out,'half-open-hidden-visible.png'),fullPage:true});
+
+  // A real close causes reconnect and cursor replay; this is distinct from a half-open reader.
+  streamMode='healthy';const reconnect='RT_RECONNECT_'+Date.now();await page.evaluate(marker=>(window).__rtMarker=marker,reconnect);
+  for(const res of [...activeStreams])res.destroy();
+  await page.waitForTimeout(1700);const reconnectEmit=await send(reconnect);
+  await page.getByText(reconnect,{exact:true}).waitFor({timeout:6000});
+  const reconnectProof=await page.evaluate(marker=>({dom:(window).__rt.dom.find(x=>x.marker===marker),receives:(window).__rt.receive.filter(x=>x.type==='text')}),reconnect);
+  assert(reconnectProof.dom,'closed stream should reconnect and replay');
+  record('closed stream reconnect replay',{textId:reconnectEmit.id,domAt:reconnectProof.dom.at,passed:true});
+  await page.screenshot({path:join(out,'reconnect-replay.png'),fullPage:true});
+  evidence.pageErrors=pageErrors;evidence.pass=pageErrors.length===0;
+  assert.equal(pageErrors.length,0,'no app runtime exceptions');
+  await writeFile(join(out,'runtime-evidence.json'),JSON.stringify(evidence,null,2)+'\n');
+  console.log(JSON.stringify({pass:evidence.pass,scenarios:evidence.scenarios.map(({scenario,passed,...rest})=>({scenario,passed,...rest})),artifacts:out},null,2));
+}finally{
+  if(browser)await browser.close();
+  for(const res of activeStreams)res.destroy();
+  await new Promise(ok=>proxy.close(ok));backend.closeStreams();await new Promise(ok=>backend.app.close(()=>ok()));await engine.shutdown();store.close();await rm(temp,{recursive:true,force:true});
+}

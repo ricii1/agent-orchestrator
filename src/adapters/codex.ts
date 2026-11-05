@@ -1,3 +1,4 @@
+import {selectedChoice} from '../approval-options.js';
 import type { Adapter, RunContext } from '../types.js';
 import { child, lines, Rpc, stop } from './process.js';
 import { instructions } from './claude.js';
@@ -25,6 +26,7 @@ export class CodexAdapter implements Adapter {
         return;
       }
       const v = msg.params || {};
+      if(msg.method==='turn/started')turnId=v.turn?.id||turnId;
       if (msg.method === 'item/agentMessage/delta') ctx.event('text', { text: v.delta });
       if (msg.method === 'item/completed' && v.item?.type === 'agentMessage') { result += (result ? '\n' : '') + v.item.text; ctx.event('message', { text: v.item.text }); }
       if (msg.method === 'item/started' && !['agentMessage','reasoning'].includes(v.item?.type)) ctx.event('tool', v.item);
@@ -35,7 +37,7 @@ export class CodexAdapter implements Adapter {
       if (msg.method === 'error') ctx.event('provider_error', v);
       if (msg.method === 'turn/completed' && !settled) {
         settled = true;
-        if (v.turn.status === 'completed') resolve(result); else reject(new Error(v.turn.error?.message || `Codex turn ${v.turn.status}`));
+        if (v.turn.status === 'completed') resolve(ctx.compact?'Konteks Codex berhasil diringkas.':result); else reject(new Error(v.turn.error?.message || `Codex turn ${v.turn.status}`));
         stop(p);
       }
     }, text => ctx.event('log', { text }));
@@ -47,11 +49,12 @@ export class CodexAdapter implements Adapter {
       const current = await rpc.request('config/read', { includeLayers: false });
       const inherited = current.config?.mcp_servers || {};
       config.mcp_servers = { ...Object.fromEntries(Object.keys(inherited).map(name=>[name,{enabled:false}])), ...config.mcp_servers };
-      const params = { cwd: ctx.task.executionPath, model: ctx.task.model || null, approvalPolicy: 'untrusted', sandbox: coordinator ? 'read-only' : 'workspace-write', developerInstructions: instructions(coordinator), config };
+      const params = { cwd: ctx.task.executionPath, model: ctx.task.model || null, approvalPolicy: ctx.permissionMode==='full'?'never':'untrusted', sandbox: ctx.permissionMode==='full'?'danger-full-access':coordinator ? 'read-only' : 'workspace-write', developerInstructions: instructions(coordinator), config };
       const response = ctx.task.sessionId
         ? await rpc.request('thread/resume', { ...params, threadId: ctx.task.sessionId, excludeTurns: true })
         : await rpc.request('thread/start', params);
       threadId = response.thread.id; ctx.session(threadId); ctx.event('model', { model: response.model });
+      if(ctx.compact){await rpc.request('thread/compact/start',{threadId});return;}
       const turn = await rpc.request('turn/start', { threadId, input: [{ type: 'text', text: ctx.prompt }] });
       turnId = turn.turn.id;
     })().catch(e=> { fail(e); stop(p); });
@@ -61,7 +64,7 @@ export class CodexAdapter implements Adapter {
     if (['item/commandExecution/requestApproval','item/fileChange/requestApproval'].includes(method)) {
       const answer = await ctx.approve(method, params);
       const denied=Array.isArray(params.availableDecisions)&&!params.availableDecisions.includes('decline')&&params.availableDecisions.includes('cancel')?'cancel':'decline';
-      return { decision: answer.approved ? 'accept' : denied };
+      return { decision: answer.choice?selectedChoice(method,params,answer.choice,answer.approved).value:answer.approved?'accept':denied };
     }
     if (method === 'item/permissions/requestApproval') {
       // The daemon never grants a session-wide sandbox expansion.

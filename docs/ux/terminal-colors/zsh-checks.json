@@ -1,0 +1,12 @@
+{
+  "shell": "zsh -d -f -i; empty HOME/ZDOTDIR; minimal environment",
+  "plugins": [
+    "zsh-autosuggestions/zsh-autosuggestions.zsh",
+    "zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+  ],
+  "history": "synthetic echo suggestion-demo only; no user history read",
+  "defaultSuggestionANSI8": true,
+  "explicitSuggestionANSI240": true,
+  "enterDoesNotAcceptSuggestion": true,
+  "ctrlCThenInput": true
+}

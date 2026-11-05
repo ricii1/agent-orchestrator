@@ -1,0 +1,278 @@
+
+> local-agent-office@0.1.0 test
+> node --import tsx --test --experimental-test-isolation=none tests/*.test.ts
+
+TAP version 13
+# Subtest: claude adapter handles session, output, and protocol result
+ok 1 - claude adapter handles session, output, and protocol result
+  ---
+  duration_ms: 37.551861
+  type: 'test'
+  ...
+# Subtest: codex adapter handles session, output, and protocol result
+ok 2 - codex adapter handles session, output, and protocol result
+  ---
+  duration_ms: 32.763434
+  type: 'test'
+  ...
+# Subtest: claude compacts an existing provider session
+ok 3 - claude compacts an existing provider session
+  ---
+  duration_ms: 30.578763
+  type: 'test'
+  ...
+# Subtest: codex compacts an existing provider session
+ok 4 - codex compacts an existing provider session
+  ---
+  duration_ms: 33.276797
+  type: 'test'
+  ...
+# Subtest: claude full access is an explicit native adapter mode
+ok 5 - claude full access is an explicit native adapter mode
+  ---
+  duration_ms: 30.837434
+  type: 'test'
+  ...
+# Subtest: codex full access is an explicit native adapter mode
+ok 6 - codex full access is an explicit native adapter mode
+  ---
+  duration_ms: 30.383362
+  type: 'test'
+  ...
+# Subtest: Codex choices echo offered decisions and the exact persisted prefix
+ok 7 - Codex choices echo offered decisions and the exact persisted prefix
+  ---
+  duration_ms: 2.341732
+  type: 'test'
+  ...
+# Subtest: Claude only offers provider suggestions with their original destination and honors suppression
+ok 8 - Claude only offers provider suggestions with their original destination and honors suppression
+  ---
+  duration_ms: 0.397575
+  type: 'test'
+  ...
+# Subtest: Claude saved rules survive later turns with session, workspace and user scopes
+ok 9 - Claude saved rules survive later turns with session, workspace and user scopes
+  ---
+  duration_ms: 0.661065
+  type: 'test'
+  ...
+# Subtest: command approval shows the exact command and folder, without protocol metadata or inferred safety
+ok 10 - command approval shows the exact command and folder, without protocol metadata or inferred safety
+  ---
+  duration_ms: 0.672657
+  type: 'test'
+  ...
+# Subtest: Claude commands and file edits get useful previews; questions expose their text and options
+ok 11 - Claude commands and file edits get useful previews; questions expose their text and options
+  ---
+  duration_ms: 0.266773
+  type: 'test'
+  ...
+# Subtest: permission decisions stay one-shot and respect provider cancellation choices
+ok 12 - permission decisions stay one-shot and respect provider cancellation choices
+  ---
+  duration_ms: 0.234997
+  type: 'test'
+  ...
+# Subtest: empty MCP tool-confirmation form needs a click rather than a JSON answer
+ok 13 - empty MCP tool-confirmation form needs a click rather than a JSON answer
+  ---
+  duration_ms: 0.346176
+  type: 'test'
+  ...
+# Subtest: real elicitation fields still require their structured answer; URL confirmations are preserved
+ok 14 - real elicitation fields still require their structured answer; URL confirmations are preserved
+  ---
+  duration_ms: 0.324946
+  type: 'test'
+  ...
+# Subtest: form examples derive only from supplied schema and do not invent unsupported fields
+ok 15 - form examples derive only from supplied schema and do not invent unsupported fields
+  ---
+  duration_ms: 0.284301
+  type: 'test'
+  ...
+# Subtest: worker transcript keeps instructions, activity and replies without duplicate result
+ok 16 - worker transcript keeps instructions, activity and replies without duplicate result
+  ---
+  duration_ms: 2.054847
+  type: 'test'
+  ...
+# Subtest: transcript history pages preserve task scope, ordering and exclude text deltas
+ok 17 - transcript history pages preserve task scope, ordering and exclude text deltas
+  ---
+  duration_ms: 34.100998
+  type: 'test'
+  ...
+# Subtest: Claw installer keeps secrets, forces loopback, disables video bootstrap, and is repeatable
+ok 18 - Claw installer keeps secrets, forces loopback, disables video bootstrap, and is repeatable
+  ---
+  duration_ms: 1.353137
+  type: 'test'
+  ...
+# Subtest: queue limits workers, serializes overlapping non-Git paths, and wakes coordinator with cross-provider results
+ok 19 - queue limits workers, serializes overlapping non-Git paths, and wakes coordinator with cross-provider results
+  ---
+  duration_ms: 132.687892
+  type: 'test'
+  ...
+# Subtest: non-Git directory locks cover ancestor paths
+ok 20 - non-Git directory locks cover ancestor paths
+  ---
+  duration_ms: 72.873727
+  type: 'test'
+  ...
+# Subtest: approval survives browser absence, is one-shot, expires on cancellation, and cannot cross task capability
+ok 21 - approval survives browser absence, is one-shot, expires on cancellation, and cannot cross task capability
+  ---
+  duration_ms: 59.015315
+  type: 'test'
+  ...
+# Subtest: recovery preserves session, interrupts active work, and expires stale approvals
+ok 22 - recovery preserves session, interrupts active work, and expires stale approvals
+  ---
+  duration_ms: 28.140239
+  type: 'test'
+  ...
+# Subtest: workspace admission resolves symlinks and rejects prefix lookalikes
+ok 23 - workspace admission resolves symlinks and rejects prefix lookalikes
+  ---
+  duration_ms: 30.846304
+  type: 'test'
+  ...
+# Subtest: worktree isolates changes, merge requires a clean checkout, and keeps integration uncommitted
+ok 24 - worktree isolates changes, merge requires a clean checkout, and keeps integration uncommitted
+  ---
+  duration_ms: 202.370895
+  type: 'test'
+  ...
+# Subtest: numeric cron validates syntax and honors timezone and day matching
+ok 25 - numeric cron validates syntax and honors timezone and day matching
+  ---
+  duration_ms: 10.858688
+  type: 'test'
+  ...
+# Subtest: scheduler skips missed minutes, prevents duplicate/overlapping runs, and holds interrupted work
+ok 26 - scheduler skips missed minutes, prevents duplicate/overlapping runs, and holds interrupted work
+  ---
+  duration_ms: 80.699729
+  type: 'test'
+  ...
+# Subtest: dashboard works without a token, rejects foreign origins/hosts, and preserves internal capabilities and SSE replay
+ok 27 - dashboard works without a token, rejects foreign origins/hosts, and preserves internal capabilities and SSE replay
+  ---
+  duration_ms: 52.841976
+  type: 'test'
+  ...
+# Subtest: PM remains one conversation per workspace/provider and concurrent first messages do not hire permanent agents
+ok 28 - PM remains one conversation per workspace/provider and concurrent first messages do not hire permanent agents
+  ---
+  duration_ms: 73.084911
+  type: 'test'
+  ...
+# Subtest: selected provider permission rules are validated, audited and returned to Claude unchanged
+ok 29 - selected provider permission rules are validated, audited and returned to Claude unchanged
+  ---
+  duration_ms: 56.169872
+  type: 'test'
+  ...
+# Subtest: manual compaction preserves task result and session, blocks overlaps and runs later user messages
+ok 30 - manual compaction preserves task result and session, blocks overlaps and runs later user messages
+  ---
+  duration_ms: 68.126596
+  type: 'test'
+  ...
+# Subtest: per-provider auto permissions resolve actions immediately, preserve questions and audit decisions
+ok 31 - per-provider auto permissions resolve actions immediately, preserve questions and audit decisions
+  ---
+  duration_ms: 75.472341
+  type: 'test'
+  ...
+# Subtest: permission modes survive store reopen and legacy settings writes can preserve them
+ok 32 - permission modes survive store reopen and legacy settings writes can preserve them
+  ---
+  duration_ms: 52.577037
+  type: 'test'
+  ...
+# Subtest: only unconstrained fieldless object forms qualify as empty confirmations
+ok 33 - only unconstrained fieldless object forms qualify as empty confirmations
+  ---
+  duration_ms: 0.461894
+  type: 'test'
+  ...
+# Subtest: folder picker lists directories and directory links, filters files/hidden entries, and canonicalizes selection
+ok 34 - folder picker lists directories and directory links, filters files/hidden entries, and canonicalizes selection
+  ---
+  duration_ms: 6.154695
+  type: 'test'
+  ...
+# Subtest: PM message formatting preserves prose while rendering bold domain and inline code
+ok 35 - PM message formatting preserves prose while rendering bold domain and inline code
+  ---
+  duration_ms: 0.507078
+  type: 'test'
+  ...
+# Subtest: code keeps literal emphasis and HTML-like text is only returned as text
+ok 36 - code keeps literal emphasis and HTML-like text is only returned as text
+  ---
+  duration_ms: 0.119768
+  type: 'test'
+  ...
+# Subtest: pixel office handles all configured seats, reduced motion, departure, and keyboard-equivalent selection labels
+ok 37 - pixel office handles all configured seats, reduced motion, departure, and keyboard-equivalent selection labels
+  ---
+  duration_ms: 1.806092
+  type: 'test'
+  ...
+# Subtest: only active freelancers appear in office; finished work remains in archive and PM stays separate
+ok 38 - only active freelancers appear in office; finished work remains in archive and PM stays separate
+  ---
+  duration_ms: 0.324736
+  type: 'test'
+  ...
+# Subtest: nested workers and their approvals belong to the coordinator workspace
+ok 39 - nested workers and their approvals belong to the coordinator workspace
+  ---
+  duration_ms: 0.151823
+  type: 'test'
+  ...
+# Subtest: PTY supports interactive input, hidden input, resize, interrupt, reconnect and explicit close
+ok 40 - PTY supports interactive input, hidden input, resize, interrupt, reconnect and explicit close
+  ---
+  duration_ms: 1635.677689
+  type: 'test'
+  ...
+# Subtest: quota normalization preserves genuine zero, missing windows, durations, and reset units
+ok 41 - quota normalization preserves genuine zero, missing windows, durations, and reset units
+  ---
+  duration_ms: 1.245382
+  type: 'test'
+  ...
+# Subtest: Claude quota uses server-side credential once; responses never include token or raw errors
+ok 42 - Claude quota uses server-side credential once; responses never include token or raw errors
+  ---
+  duration_ms: 3.382077
+  type: 'test'
+  ...
+# Subtest: Codex quota reads account limits via CLI without creating a task
+ok 43 - Codex quota reads account limits via CLI without creating a task
+  ---
+  duration_ms: 32.534116
+  type: 'test'
+  ...
+# Subtest: usage requests coalesce, cache, rate-limit manual refresh, and mark stale data after network failure
+ok 44 - usage requests coalesce, cache, rate-limit manual refresh, and mark stale data after network failure
+  ---
+  duration_ms: 4.606229
+  type: 'test'
+  ...
+1..44
+# tests 44
+# suites 0
+# pass 44
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3184.831067

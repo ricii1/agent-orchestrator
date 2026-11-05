@@ -18,7 +18,9 @@
     "office": "node scripts/office.mjs"
   },
   "dependencies": {
-    "better-sqlite3": "11.10.0"
+    "better-sqlite3": "11.10.0",
+    "@xterm/xterm": "file:vendor/xterm-5.5.0.tgz",
+    "@xterm/addon-fit": "file:vendor/addon-fit-0.10.0.tgz"
   },
   "devDependencies": {
     "@types/better-sqlite3": "7.6.13",

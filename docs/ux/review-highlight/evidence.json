@@ -1,0 +1,35 @@
+{
+  "capturedAt": "2026-11-05T04:33:50.930Z",
+  "browser": "Google Chrome headless via CDP",
+  "environment": "isolated Vite output in /tmp + local fixture API; no daemon/provider/model",
+  "checks": {
+    "desktop": {
+      "cta": "⚠ Perlu ditinjau · 2",
+      "items": 2
+    },
+    "dialog": {
+      "title": "Perlu ditinjau",
+      "rows": [
+        "failed-a",
+        "cut-a"
+      ],
+      "focus": "BUTTON"
+    },
+    "transition": "⚠ Perlu ditinjau · 1",
+    "updatedRows": 1,
+    "focusAfterRemoval": "review",
+    "keyboard": "failed-a",
+    "detail": {
+      "title": "Builder failed-a",
+      "reason": "⚠ Perlu ditinjau · Gagal. Tugas gagal. Periksa pesan error, aktivitas, dan perubahan sebelum memutuskan langkah berikutnya.",
+      "provider": "codexGagal"
+    },
+    "mobile": {
+      "width": 320,
+      "scrollWidth": 305,
+      "cta": true
+    },
+    "noResume": true,
+    "apiCalls": []
+  }
+}

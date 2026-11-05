@@ -1,0 +1,24 @@
+{
+  "demo": true,
+  "realProviders": false,
+  "checks": 16,
+  "passed": [
+    "add B through folder picker while A runs",
+    "B scoped settings preserve A provider and running session",
+    "A draft restored after selecting B",
+    "B draft restored independently",
+    "A Codex and B Claude PM run simultaneously",
+    "B child snapshots Claude provider and model",
+    "B composer context names selected provider/model",
+    "A pending question does not appear in B cards",
+    "A question appears after switching to A",
+    "A children stay Codex after UI switches",
+    "provider switch starts with distinct empty composer draft",
+    "old PM accessible in selector after switch",
+    "old PM included in history dialog",
+    "mobile workspace configuration has no horizontal overflow",
+    "mobile workspace save button remains reachable",
+    "no browser runtime errors"
+  ],
+  "errors": []
+}

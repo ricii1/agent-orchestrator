@@ -1,3 +1,4 @@
+import {Terminals} from './terminal.js';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { readFile, realpath } from 'node:fs/promises';
 import { join, extname } from 'node:path';
@@ -6,8 +7,9 @@ import { promisify } from 'node:util';
 import { Engine } from './engine.js';
 import { Scheduler } from './scheduler.js';
 import { UsageService } from './usage.js';
+import { readPreview } from './artifacts.js';
 import { allowedWorkspace, browseFolders, contains, diff, merge, repoRoot } from './workspace.js';
-import type { Settings } from './types.js';
+import { active, sameWorkspaceAgents, workspaceAgents, type Settings, type WorkspaceAgents } from './types.js';
 const exec=promisify(execFile);
 async function body(req: IncomingMessage) {
   if(!req.headers['content-type']?.startsWith('application/json')) throw new Error('JSON content-type is required');
@@ -21,6 +23,7 @@ const text=(value: unknown,name: string,max=100000): string=> { if(typeof value!
 const provider=(value: unknown)=> { if(value!=='claude' && value!=='codex') throw new Error('Invalid provider'); return value; };
 export function server(engine: Engine,scheduler: Scheduler,publicDir: string,usage=new UsageService()) {
   const streams=new Set<ServerResponse>();
+  const terminals=new Terminals(()=>engine.store.settings().roots);
   let healthCache: {time:number;value:any} | undefined;
   const app=createServer(async(req,res)=> {
     res.setHeader('X-Content-Type-Options','nosniff'); res.setHeader('Referrer-Policy','no-referrer');
@@ -37,6 +40,19 @@ export function server(engine: Engine,scheduler: Scheduler,publicDir: string,usa
         return json(200,await engine.tool(auth,text(input.name,'tool',100),input.arguments || {}));
       }
       if(path.startsWith('/api/')) {
+        if(req.method==='GET' && path==='/api/previews') {
+          const workspace=url.searchParams.get('workspace')||'',file=url.searchParams.get('path')||'';
+          const preview=await readPreview(file,workspace,engine.store.settings().roots,engine.store.tasks());
+          res.writeHead(200,{'content-type':preview.mime,'content-length':preview.bytes.length,'cache-control':'no-store','x-content-type-options':'nosniff','content-security-policy':"default-src 'none'; sandbox"});res.end(preview.bytes);return;
+        }
+        if(path==='/api/terminals'&&req.method==='POST'){const input=await body(req);return json(200,await terminals.open(text(input.workspace,'workspace',4096)));}
+        const terminalMatch=/^\/api\/terminals\/([a-f0-9-]+)$/.exec(path);
+        if(terminalMatch){
+          const id=terminalMatch[1];
+          if(req.method==='GET'){const after=Number(url.searchParams.get('after')||0);if(!Number.isSafeInteger(after)||after<0)throw new Error('Invalid terminal cursor');return json(200,terminals.read(id,after));}
+          if(req.method==='POST'){const input=await body(req);if(input.action==='close')terminals.close(id);else if(input.action==='resize')terminals.resize(id,input.cols,input.rows);else if(input.action==='input')terminals.input(id,input.data);else throw new Error('Unknown terminal action');return json(200,{ok:true});}
+        }
+
         if(req.method==='POST' && path==='/api/folders') {
           const input=await body(req);
           if(input.path!==undefined&&(typeof input.path!=='string'||!input.path.length||input.path.length>4096)) throw new Error('Invalid folder path');
@@ -44,8 +60,8 @@ export function server(engine: Engine,scheduler: Scheduler,publicDir: string,usa
           return json(200,await browseFolders(input.path,input.hidden===true));
         }
         if(req.method==='GET' && path==='/api/usage') return json(200,await usage.get(url.searchParams.get('refresh')==='1'));
-        if(req.method==='POST' && path==='/api/pm/messages') { const input=await body(req); return json(200,await engine.messagePM(text(input.workspace,'workspace',4096),text(input.text,'message'))); }
-        if(req.method==='GET' && path==='/api/state') return json(200,{ tasks:engine.store.tasks(),approvals:engine.store.approvals(),schedules:engine.store.all('schedules'),settings:engine.store.settings() });
+        if(req.method==='POST' && path==='/api/pm/messages') { const input=await body(req); return json(200,await engine.messagePM(text(input.workspace,'workspace',4096),text(input.text,'message'),input.expectedAgents)); }
+        if(req.method==='GET' && path==='/api/state') return json(200,{ capabilities:{permissionModes:true},tasks:engine.store.tasks(),terminals:terminals.summary(),approvals:engine.store.approvals(),schedules:engine.store.all('schedules'),settings:engine.store.settings() });
         if(req.method==='GET' && path==='/api/providers') {
           if(!healthCache || Date.now()-healthCache.time>30000) {
             const entries=await Promise.all(['claude','codex'].map(async p=> {
@@ -68,7 +84,7 @@ export function server(engine: Engine,scheduler: Scheduler,publicDir: string,usa
           streams.add(res);
           let flushing=false;
           const flush=()=> {
-            if(flushing || res.destroyed) return;
+            if(flushing || res.destroyed || res.writableEnded) return;
             flushing=true;
             try {
               for(;;) {
@@ -81,11 +97,12 @@ export function server(engine: Engine,scheduler: Scheduler,publicDir: string,usa
           const heartbeat=setInterval(()=>res.write(': heartbeat\n\n'),15000);
           engine.on('event',flush); res.on('close',()=> { clearInterval(heartbeat); engine.off('event',flush); streams.delete(res); }); flush(); return;
         }
-        const match=/^\/api\/tasks\/([^/]+)(?:\/(messages|cancel|resume|diff|merge|events))?$/.exec(path);
+        const match=/^\/api\/tasks\/([^/]+)(?:\/(messages|cancel|resume|diff|merge|events|compact))?$/.exec(path);
         if(match) {
           const [,id,action]=match; const task=engine.store.task(id);
           if(req.method==='GET' && action==='diff') return json(200,await diff(task));
           if(req.method==='GET' && action==='events') {
+            if(url.searchParams.get('sync')==='1')return json(200,{after:engine.store.syncCursor(id)});
             if(url.searchParams.has('before')) {
               const before=Number(url.searchParams.get('before'));
               if(!Number.isSafeInteger(before)||before<1) throw new Error('Invalid history cursor');
@@ -98,6 +115,7 @@ export function server(engine: Engine,scheduler: Scheduler,publicDir: string,usa
           if(req.method==='POST') {
             const input=await body(req);
             if(action==='messages') { await engine.message(id,text(input.text,'message')); return json(200,{ok:true}); }
+            if(action==='compact'){await engine.compact(id);return json(200,{ok:true});}
             if(action==='cancel') { engine.cancel(id); return json(200,{ok:true}); }
             if(action==='resume') { await engine.resume(id); return json(200,{ok:true}); }
             if(action==='merge') {
@@ -114,15 +132,59 @@ export function server(engine: Engine,scheduler: Scheduler,publicDir: string,usa
           }
         }
         if(req.method==='POST' && path==='/api/tasks') { const input=await body(req); return json(201,await engine.create({prompt:text(input.prompt,'prompt'),workspace:text(input.workspace,'workspace',4096),provider:input.provider===undefined?undefined:provider(input.provider),model:typeof input.model==='string'?input.model:undefined})); }
-        if(req.method==='POST' && path==='/api/approvals') { const input=await body(req); if(typeof input.approved!=='boolean') throw new Error('approved must be boolean'); engine.answer(text(input.id,'approval ID',100),input.approved,typeof input.answer==='string'?input.answer:''); return json(200,{ok:true}); }
+        if(req.method==='POST' && path==='/api/approvals') { const input=await body(req); if(typeof input.approved!=='boolean') throw new Error('approved must be boolean'); engine.answer(text(input.id,'approval ID',100),input.approved,typeof input.answer==='string'?input.answer:'',input.choice===undefined?undefined:text(input.choice,'approval choice',100)); return json(200,{ok:true}); }
+        // Deliberately additive: never accepts root removal, permissions, or global defaults.
+        if(req.method==='POST' && path==='/api/workspaces') {
+          const input=await body(req);
+          if(Object.keys(input).some(key=>key!=='workspace')) throw new Error('Only workspace registration is allowed');
+          const location=text(input.workspace,'workspace',4096);
+          const workspace=await allowedWorkspace(location,[location]);
+          const latest=engine.store.settings();
+          if(!latest.roots.includes(workspace)) {
+            if(latest.roots.length>=30) throw new Error('At most 30 workspace directories');
+            const settings={...latest,roots:[...latest.roots,workspace]};
+            engine.store.saveSettings(settings);engine.event(null,'settings',settings);
+          }
+          return json(200,{workspace});
+        }
+        if(req.method==='PUT' && path==='/api/workspaces/agents') {
+          const input=await body(req);
+          if(Object.keys(input).some(key=>!['workspace','agents','expected'].includes(key))) throw new Error('Only workspace agent configuration is allowed');
+          const workspace=await allowedWorkspace(text(input.workspace,'workspace',4096),engine.store.settings().roots);
+          const value=input.agents;
+          if(!value||typeof value!=='object'||Array.isArray(value)||Object.keys(value).length!==4||Object.keys(value).some(key=>!['coordinatorProvider','workerProvider','claudeModel','codexModel'].includes(key))) throw new Error('Invalid workspace agent configuration');
+          for(const key of ['claudeModel','codexModel']) if(typeof value[key]!=='string'||value[key].length>200||/[\r\n\0]/.test(value[key])) throw new Error('Invalid model');
+          const agents:WorkspaceAgents={coordinatorProvider:provider(value.coordinatorProvider),workerProvider:provider(value.workerProvider),claudeModel:value.claudeModel,codexModel:value.codexModel};
+          const latest=engine.store.settings();
+          if(!latest.roots.some(root=>contains(root,workspace))) throw new Error('Workspace is no longer registered');
+          const previous=workspaceAgents(latest,workspace);
+          const same=sameWorkspaceAgents;
+          if(!same(input.expected,previous)) return json(409,{error:'Konfigurasi workspace berubah. Muat ulang pengaturan sebelum menyimpan.'});
+          if(!same(agents,previous)) {
+            const overlaps=(path:string)=>contains(path,workspace)||contains(workspace,path);
+            const tasks=engine.store.tasks();
+            if(tasks.some(task=>(active(task.status)||engine.running.has(task.id)||engine.lockedTasks.has(task.id)) && (overlaps(task.workspace)||!!task.parentId&&overlaps(tasks.find(t=>t.id===task.parentId)?.workspace||task.workspace)))) throw new Error('Selesaikan agent dan freelancer workspace ini sebelum mengubah provider/model. Workspace lain tetap dapat berjalan.');
+          }
+          const settings={...latest,workspaceAgents:{...latest.workspaceAgents,[workspace]:agents}};
+          engine.store.saveSettings(settings);engine.event(null,'settings',settings);return json(200,settings);
+        }
         if(req.method==='PUT' && path==='/api/settings') {
           const input=await body(req);
           if(!Array.isArray(input.roots) || input.roots.length>30 || input.roots.some((x:unknown)=>typeof x!=='string')) throw new Error('Invalid workspace directories');
           const roots=await Promise.all(input.roots.map(async(p:string)=>allowedWorkspace(p,[p])));
           if(!Number.isInteger(input.maxWorkers) || input.maxWorkers<1 || input.maxWorkers>10) throw new Error('Worker limit must be 1–10');
-          const settings:Settings={roots,coordinatorProvider:provider(input.coordinatorProvider),workerProvider:provider(input.workerProvider),maxWorkers:input.maxWorkers,claudeModel:typeof input.claudeModel==='string'?input.claudeModel:'',codexModel:typeof input.codexModel==='string'?input.codexModel:''};
-          if(engine.running.size || engine.lockedTasks.size) throw new Error('Stop active agents before changing access settings');
-          engine.store.saveSettings(settings); engine.event(null,'settings',settings); void engine.drain(); return json(200,settings);
+          const previous=engine.store.settings();
+          if(input.expectedSettings!==undefined&&JSON.stringify(input.expectedSettings)!==JSON.stringify(previous)) return json(409,{error:'Settings changed. Reload before saving.'});
+          const permissions=input.permissions===undefined?previous.permissions??{}:input.permissions;
+          if(!permissions||typeof permissions!=='object'||Array.isArray(permissions)||Object.keys(permissions).some(key=>!['claude','codex'].includes(key))||Object.values(permissions).some(mode=>typeof mode!=='string'||!['manual','auto','full'].includes(mode)))throw new Error('Mode izin harus manual, auto atau full untuk setiap provider');
+          for(const name of ['claude','codex'] as const){
+            const old=previous.permissions?.[name]||'manual',next=permissions[name]||'manual';
+            if(old!==next&&(old==='full'||next==='full')&&[...engine.running.keys()].some(id=>engine.store.task(id).provider===name))throw new Error('Selesaikan atau hentikan agent '+name+' sebelum mengubah Akses penuh.');
+          }
+          const settings:Settings={workspaceAgents:previous.workspaceAgents,permissions,roots,coordinatorProvider:provider(input.coordinatorProvider),workerProvider:provider(input.workerProvider),maxWorkers:input.maxWorkers,claudeModel:typeof input.claudeModel==='string'?input.claudeModel:'',codexModel:typeof input.codexModel==='string'?input.codexModel:''};
+          const accessChanged=(['roots','coordinatorProvider','workerProvider','maxWorkers','claudeModel','codexModel'] as const).some(key=>JSON.stringify(previous[key])!==JSON.stringify(settings[key]));
+          if((engine.store.tasks().some(t=>active(t.status)) || engine.running.size || engine.lockedTasks.size || terminals.summary().some(s=>s.exitCode===null))&&accessChanged)throw new Error('Stop active agents before changing access settings');
+          engine.store.saveSettings(settings); engine.event(null,'settings',settings); engine.applyPermissionSettings(); void engine.drain(); return json(200,settings);
         }
         if(req.method==='POST' && path==='/api/schedules') {
           const input=await body(req);
@@ -142,5 +204,6 @@ export function server(engine: Engine,scheduler: Scheduler,publicDir: string,usa
     } catch(error) { json(400,{error: error instanceof Error?error.message:String(error)}); }
   });
   const merging=new Set<string>();
+  app.on('close',()=>terminals.shutdown());
   return { app, closeStreams:()=> { for(const res of streams) res.end(); } };
 }

@@ -1,0 +1,126 @@
+{
+  "capturedAt": "2026-11-04T10:42:23.557Z",
+  "browser": "Local Google Chrome headless via CDP",
+  "source": "Standalone prototype.html, file://; CSP connect-src none",
+  "checks": [
+    {
+      "name": "desktop",
+      "width": 1440,
+      "scrollWidth": 1425,
+      "height": 1467,
+      "canvas": 720,
+      "focus": ""
+    },
+    {
+      "name": "tablet",
+      "width": 768,
+      "scrollWidth": 753,
+      "height": 2156,
+      "canvas": 720,
+      "focus": ""
+    },
+    {
+      "name": "mobile",
+      "width": 390,
+      "scrollWidth": 375,
+      "height": 2582,
+      "canvas": 720,
+      "focus": ""
+    },
+    {
+      "name": "reflow",
+      "width": 320,
+      "scrollWidth": 305,
+      "height": 2862,
+      "canvas": 720,
+      "focus": ""
+    },
+    {
+      "name": "settings",
+      "width": 1440,
+      "scrollWidth": 1425,
+      "height": 2516,
+      "canvas": 720,
+      "focus": ""
+    },
+    {
+      "name": "settings-mobile",
+      "width": 390,
+      "scrollWidth": 375,
+      "height": 3199,
+      "canvas": 720,
+      "focus": ""
+    },
+    {
+      "name": "recovery",
+      "width": 1440,
+      "scrollWidth": 1425,
+      "height": 1286,
+      "canvas": 720,
+      "focus": ""
+    },
+    {
+      "name": "states",
+      "width": 1440,
+      "scrollWidth": 1425,
+      "height": 2506,
+      "canvas": 720,
+      "focus": ""
+    },
+    {
+      "name": "permission-full",
+      "width": 768,
+      "scrollWidth": 753,
+      "height": 2842,
+      "canvas": 720,
+      "focus": "dialog-close"
+    },
+    {
+      "name": "terminal-mobile",
+      "width": 390,
+      "scrollWidth": 375,
+      "height": 2582,
+      "canvas": 720,
+      "focus": "dialog-close"
+    },
+    {
+      "name": "tablet-office",
+      "width": 768,
+      "scrollWidth": 753,
+      "height": 2466,
+      "canvas": 720,
+      "focus": ""
+    },
+    {
+      "name": "mobile-office",
+      "width": 390,
+      "scrollWidth": 375,
+      "height": 2786,
+      "canvas": 720,
+      "focus": ""
+    },
+    {
+      "name": "settings-reflow",
+      "width": 320,
+      "scrollWidth": 305,
+      "height": 3588,
+      "canvas": 720,
+      "focus": ""
+    },
+    {
+      "name": "recovery-reflow",
+      "width": 320,
+      "scrollWidth": 305,
+      "height": 2585,
+      "canvas": 720,
+      "focus": ""
+    }
+  ],
+  "interactions": {
+    "fillsWithoutSubmit": true,
+    "invalidJsonRetained": true,
+    "dialogInitialFocus": true,
+    "focusReturned": true
+  },
+  "pageErrors": []
+}

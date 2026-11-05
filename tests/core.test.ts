@@ -100,11 +100,11 @@ test('scheduler skips missed minutes, prevents duplicate/overlapping runs, and h
 test('dashboard works without a token, rejects foreign origins/hosts, and preserves internal capabilities and SSE replay',async t=>{
  const {engine,workspace}=await fixture(t);const scheduler=new Scheduler(engine);const {app}=server(engine,scheduler,workspace);
  class Response extends Writable {
-  statusCode=200; chunks:string[]=[]; headers:Record<string,string>={};
+  statusCode=200; chunks:string[]=[]; raw:Buffer[]=[]; headers:Record<string,string>={};
   setHeader(k:string,v:string){this.headers[k]=v;}
   flushHeaders(){}
   writeHead(status:number,headers:Record<string,string>){this.statusCode=status;Object.assign(this.headers,headers);return this;}
-  _write(chunk:any,_encoding:any,callback:()=>void){this.chunks.push(String(chunk));callback();}
+  _write(chunk:any,_encoding:any,callback:()=>void){this.raw.push(Buffer.from(chunk));this.chunks.push(String(chunk));callback();}
  }
  const request=(path:string,headers:Record<string,string>={},method='GET',input?:any)=>{
   const req=Readable.from(input===undefined?[]:[Buffer.from(JSON.stringify(input))]) as any;
@@ -114,21 +114,45 @@ test('dashboard works without a token, rejects foreign origins/hosts, and preser
  const finish=async(r:ReturnType<typeof request>)=>{if(!r.res.writableFinished)await new Promise<void>(resolve=>r.res.on('finish',resolve));return r.res;};
  const headers={'content-type':'application/json'};
  assert.equal((await finish(request('/api/state'))).statusCode,200);
+ const image=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/lXcAAAAASUVORK5CYII=','base64');
+ await writeFile(join(workspace,'preview.png'),image);
+ const preview=await finish(request('/api/previews?workspace='+encodeURIComponent(workspace)+'&path=preview.png'));
+ assert.equal(preview.statusCode,200);assert.equal(preview.headers['content-type'],'image/png');assert.equal(preview.headers['cache-control'],'no-store');assert.deepEqual(Buffer.concat(preview.raw),image);
+ assert.equal((await finish(request('/api/previews?workspace='+encodeURIComponent(workspace)+'&path=preview.png',{host:'evil.invalid'}))).statusCode,403);
  const folderResponse=await finish(request('/api/folders',headers,'POST',{path:workspace}));
  assert.equal(folderResponse.statusCode,200);assert.equal(JSON.parse(folderResponse.chunks.join('')).path,workspace);
  assert.equal((await finish(request('/api/folders',{...headers,origin:'https://evil.invalid'},'POST',{path:workspace}))).statusCode,403);
  assert.equal((await finish(request('/api/folders',headers,'POST',{path:42}))).statusCode,400);
  assert.equal((await finish(request('/api/folders',headers,'POST',{path:workspace,hidden:'yes'}))).statusCode,400);
- assert.deepEqual(engine.store.settings().roots,[workspace]);
+ assert.deepEqual(engine.store.settings().roots,[workspace]); for(const permissions of [{codex:'yes'},{codex:['auto']},[],{unknown:'auto'},null])assert.equal((await finish(request('/api/settings',headers,'PUT',{...engine.store.settings(),permissions}))).statusCode,400);
+ const change=await finish(request('/api/settings',headers,'PUT',{...engine.store.settings(),permissions:{codex:'auto',claude:'manual'}}));assert.equal(change.statusCode,200);assert.equal(engine.store.settings().permissions?.codex,'auto');
+ assert.equal((await finish(request('/api/terminals',{...headers,origin:'https://evil.invalid'},'POST',{workspace}))).statusCode,403);
+ assert.equal((await finish(request('/api/terminals',headers,'POST',{workspace:'/etc'}))).statusCode,400);
+ assert.equal((await finish(request('/api/terminals/invalid-id'))).statusCode,404);
+
  assert.equal((await finish(request('/internal/tool',headers,'POST',{name:'get_status'}))).statusCode,401);
  assert.equal((await finish(request('/internal/tool',{...headers,authorization:'Bearer invalid-capability'},'POST',{name:'get_status'}))).statusCode,400);
  assert.equal((await finish(request('/api/state',{...headers,origin:'https://evil.invalid'}))).statusCode,403);
  assert.equal((await finish(request('/api/state',{...headers,host:'evil.invalid'}))).statusCode,403);
  assert.equal((await finish(request('/api/tasks',headers,'POST',{prompt:'test',workspace}))).statusCode,201);
+ const hotPermission=await finish(request('/api/settings',headers,'PUT',{...engine.store.settings(),permissions:{codex:'manual',claude:'auto'}}));assert.equal(hotPermission.statusCode,200);
+ assert.equal((await finish(request('/api/settings',headers,'PUT',{...engine.store.settings(),maxWorkers:9}))).statusCode,400);
+ assert.equal((await finish(request('/api/settings',headers,'PUT',{...engine.store.settings(),permissions:{codex:'full'}}))).statusCode,400);
+ const savedState=JSON.parse((await finish(request('/api/state'))).chunks.join(''));assert.equal(savedState.capabilities.permissionModes,true);assert.equal(savedState.settings.permissions.claude,'auto');
  const historyTask=engine.store.tasks()[0];
  const historyEvent=engine.store.event(historyTask.id,'message',{text:'history cursor proof'});
+ const syncResponse=await finish(request('/api/tasks/'+historyTask.id+'/events?sync=1'));
+ assert.equal(JSON.parse(syncResponse.chunks.join('')).after,historyEvent.id);
  const history=await finish(request('/api/tasks/'+historyTask.id+'/events?before='+(historyEvent.id+1)));
  assert.equal(history.statusCode,200);assert.ok(JSON.parse(history.chunks.join('')).some((e:any)=>e.id===historyEvent.id));
+ const incrementalStart=JSON.parse(syncResponse.chunks.join('')).after;const incrementalIds:number[]=[];
+ for(let i=0;i<505;i++)incrementalIds.push(engine.store.event(historyTask.id,i===250?'text':i%2?'status':'tool',{text:`delta-${i}`}).id);
+ const firstPage=JSON.parse((await finish(request(`/api/tasks/${historyTask.id}/events?after=${incrementalStart}`))).chunks.join(''));
+ assert.equal(firstPage.length,500);assert.ok(firstPage.some((e:any)=>e.type==='text'&&e.data.text==='delta-250'));
+ const secondPage=JSON.parse((await finish(request(`/api/tasks/${historyTask.id}/events?after=${firstPage.at(-1).id}`))).chunks.join(''));
+ assert.equal(secondPage.length,5);assert.deepEqual([...firstPage,...secondPage].map((e:any)=>e.id),incrementalIds);
+ assert.ok(engine.store.recentEvents(historyTask.id).at(-1)!.id>historyEvent.id,'non-text tail is sparse and newer than the sync boundary');
+ assert.equal(JSON.parse((await finish(request(`/api/tasks/${historyTask.id}/events?sync=1`))).chunks.join('')).after,historyEvent.id,'sparse status tail must not advance the incremental boundary');
  for(const cursor of ['0','-1','abc','1.5'])assert.equal((await finish(request('/api/tasks/'+historyTask.id+'/events?before='+cursor))).statusCode,400);
  const stream=request('/api/events?after=0',headers);
  await until(()=>stream.res.chunks.some(c=>c.includes('"type":"created"')));
@@ -153,4 +177,64 @@ test('PM remains one conversation per workspace/provider and concurrent first me
  const worker=await engine.tool(cap,'spawn_task',{prompt:'Focused change',role:'Frontend',provider:'claude'});
  assert.equal(worker.role,'Frontend');assert.equal(worker.parentId,first.id);assert.equal(worker.kind,undefined);
  await assert.rejects(()=>engine.tool(cap,'spawn_task',{prompt:'invalid',role:'a'.repeat(81)}),/role/);
+});
+
+test('selected provider permission rules are validated, audited and returned to Claude unchanged',async t=>{
+ const {engine,workspace,fake,store}=await fixture(t);
+ const task=await engine.create({prompt:'read',workspace,provider:'claude'});await until(()=>fake.runs.has(task.id));
+ const capability=engine.running.get(task.id)!.capability;
+ const rule={type:'addRules',behavior:'allow',rules:[{toolName:'Read',ruleContent:'/project/**'}],destination:'session'};
+ const input={file_path:'/project/readme'};
+ const result=engine.tool(capability,'approve',{tool_name:'Read',input,permission_suggestions:[rule]});
+ await until(()=>store.approvals().some(a=>a.status==='pending'));
+ const request=store.approvals().find(a=>a.status==='pending')!;
+ assert.throws(()=>engine.answer(request.id,true,'','claude:rule:999'),/tidak tersedia/);
+ assert.equal(store.approvals()[0].status,'pending');
+ engine.answer(request.id,true,'','claude:rule:0');
+ assert.deepEqual(await result,{behavior:'allow',updatedInput:input,updatedPermissions:[rule]});
+ assert.equal(store.approvals()[0].choice,'claude:rule:0');
+ assert.throws(()=>engine.answer(request.id,true,'','claude:rule:0'),/already answered/);
+ fake.finish(task.id);await until(()=>!engine.running.has(task.id));
+});
+
+test('manual compaction preserves task result and session, blocks overlaps and runs later user messages',async t=>{
+ const {engine,workspace,store,fake}=await fixture(t);
+ const task=store.createTask({prompt:'existing chat',workspace,provider:'codex',kind:'pm',sessionId:'saved',executionPath:workspace,status:'completed',result:'Previous answer'});
+ await engine.compact(task.id);await until(()=>fake.runs.has(task.id));
+ assert.equal(fake.runs.get(task.id)!.ctx.compact,true);assert.equal(fake.runs.get(task.id)!.ctx.prompt,'/compact');
+ await assert.rejects(()=>engine.compact(task.id),/Tunggu/);
+ await engine.message(task.id,'Next message');fake.finish(task.id,'Compacted');
+ await until(()=>fake.runs.get(task.id)?.ctx.prompt==='Next message');
+ assert.equal(store.task(task.id).result,'Previous answer');
+ assert.ok(store.events(0,task.id).some(e=>e.type==='command_result'&&(e.data as any).success));
+ fake.finish(task.id,'Next answer');await until(()=>!engine.running.has(task.id));
+ assert.equal(store.task(task.id).result,'Next answer');
+ await assert.rejects(()=>engine.messagePM(workspace,'!echo must-not-run'),/Terminal/);
+});
+
+test('per-provider auto permissions resolve actions immediately, preserve questions and audit decisions',async t=>{
+ const {engine,workspace,store,fake}=await fixture(t);
+ store.saveSettings({...store.settings(),permissions:{codex:'auto',claude:'manual'}});
+ const task=await engine.create({prompt:'work',workspace,provider:'codex'});await until(()=>fake.runs.has(task.id));
+ const ctx=fake.runs.get(task.id)!.ctx;
+ const answer=await ctx.approve('item/commandExecution/requestApproval',{command:'npm test',availableDecisions:['accept','cancel']});
+ assert.equal(answer.approved,true);assert.equal(store.approvals()[0].automatic,true);assert.equal(store.approvals()[0].status,'approved');
+ assert.equal((await ctx.approve('unsupported_permissions',{})).approved,false);
+ const unavailable=await ctx.approve('item/commandExecution/requestApproval',{availableDecisions:['cancel']});assert.equal(unavailable.approved,false);
+ const question=ctx.approve('question',{question:'Pilih nama proyek?'});
+ const pending=store.approvals().find(a=>a.status==='pending')!;assert.ok(pending);assert.equal(store.task(task.id).status,'waiting');
+ engine.answer(pending.id,true,'Kantor');assert.equal((await question).answer,'Kantor');
+ const confirmation=await ctx.approve('elicitation',{mode:'form',requestedSchema:{type:'object',properties:{}},_meta:{codex_approval_kind:'mcp_tool_call'}});assert.equal(confirmation.approved,true);
+ const original=engine.store.task(task.id);original.provider='claude';store.saveTask(original);
+ const manual=ctx.approve('permission',{tool_name:'Bash',input:{command:'npm test'}});
+ assert.ok(store.approvals().some(a=>a.kind==='permission'&&a.status==='pending'));
+ store.saveSettings({...store.settings(),permissions:{codex:'auto',claude:'auto'}});engine.applyPermissionSettings();
+ assert.equal((await manual).approved,true);assert.ok(!store.approvals().some(a=>a.status==='pending'));
+ fake.finish(task.id);await until(()=>!engine.running.has(task.id));
+});
+
+test('permission modes survive store reopen and legacy settings writes can preserve them',async t=>{
+ const {dir}=await fixture(t);const path=join(dir,'permissions.db');const first=new Store(path);
+ first.saveSettings({...first.settings(),permissions:{claude:'full',codex:'auto'}});first.close();
+ const reopened=new Store(path);try{assert.deepEqual(reopened.settings().permissions,{claude:'full',codex:'auto'});}finally{reopened.close();}
 });

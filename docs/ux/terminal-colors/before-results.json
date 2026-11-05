@@ -1,0 +1,447 @@
+[
+  {
+    "viewport": [
+      1440,
+      1000
+    ],
+    "cols": 148,
+    "rows": 23,
+    "theme": {
+      "background": "#20251f",
+      "foreground": "#e0e6d9"
+    },
+    "minimumContrastRatio": 1,
+    "font": "monospace",
+    "panel": "rgb(32, 47, 40)",
+    "host": {
+      "x": 237,
+      "y": 591.390625,
+      "width": 1174,
+      "height": 351.8125,
+      "top": 591.390625,
+      "right": 1411,
+      "bottom": 943.203125,
+      "left": 237
+    },
+    "screen": {
+      "x": 237,
+      "y": 591.390625,
+      "width": 1158,
+      "height": 345,
+      "top": 591.390625,
+      "right": 1395,
+      "bottom": 936.390625,
+      "left": 237
+    },
+    "spans": [
+      [
+        {
+          "text": "❯",
+          "color": "rgb(78, 154, 6)",
+          "opacity": "1"
+        },
+        {
+          "text": " echo",
+          "color": "rgb(224, 230, 217)",
+          "opacity": "1"
+        },
+        {
+          "text": " suggestion-demo",
+          "color": "rgb(85, 87, 83)",
+          "opacity": "1"
+        }
+      ],
+      [
+        {
+          "text": "Actual input: echo hello",
+          "color": "rgb(224, 230, 217)",
+          "opacity": "1"
+        }
+      ],
+      [
+        {
+          "text": "ANSI fg8: ",
+          "color": "rgb(224, 230, 217)",
+          "opacity": "1"
+        },
+        {
+          "text": "ghost suggestion",
+          "color": "rgb(85, 87, 83)",
+          "opacity": "1"
+        }
+      ],
+      [
+        {
+          "text": "ANSI fg240: ",
+          "color": "rgb(224, 230, 217)",
+          "opacity": "1"
+        },
+        {
+          "text": "explicit shell gray",
+          "color": "rgb(88, 88, 88)",
+          "opacity": "1"
+        }
+      ],
+      [
+        {
+          "text": "SGR dim: ",
+          "color": "rgb(224, 230, 217)",
+          "opacity": "1"
+        },
+        {
+          "text": "dim text",
+          "color": "rgba(224, 230, 217, 0.5)",
+          "opacity": "1"
+        }
+      ],
+      [
+        {
+          "text": "red ",
+          "color": "rgb(204, 0, 0)",
+          "opacity": "1"
+        },
+        {
+          "text": "green ",
+          "color": "rgb(78, 154, 6)",
+          "opacity": "1"
+        },
+        {
+          "text": "yellow ",
+          "color": "rgb(196, 160, 0)",
+          "opacity": "1"
+        },
+        {
+          "text": "blue ",
+          "color": "rgb(52, 101, 164)",
+          "opacity": "1"
+        },
+        {
+          "text": "magenta ",
+          "color": "rgb(117, 80, 123)",
+          "opacity": "1"
+        },
+        {
+          "text": "cyan",
+          "color": "rgb(6, 152, 154)",
+          "opacity": "1"
+        }
+      ],
+      [
+        {
+          "text": "Glyphs: Agjpqy _ | ❯ → ✓ café ",
+          "color": "rgb(224, 230, 217)",
+          "opacity": "1"
+        },
+        {
+          "text": "日本語",
+          "color": "rgb(224, 230, 217)",
+          "opacity": "1"
+        }
+      ]
+    ],
+    "lastResize": {
+      "action": "resize",
+      "cols": 148,
+      "rows": 23
+    }
+  },
+  {
+    "viewport": [
+      390,
+      844
+    ],
+    "cols": 43,
+    "rows": 36,
+    "theme": {
+      "background": "#20251f",
+      "foreground": "#e0e6d9"
+    },
+    "minimumContrastRatio": 1,
+    "font": "monospace",
+    "panel": "rgb(32, 47, 40)",
+    "host": {
+      "x": 17,
+      "y": 229,
+      "width": 356,
+      "height": 549.40625,
+      "top": 229,
+      "right": 373,
+      "bottom": 778.40625,
+      "left": 17
+    },
+    "screen": {
+      "x": 17,
+      "y": 229,
+      "width": 337,
+      "height": 540,
+      "top": 229,
+      "right": 354,
+      "bottom": 769,
+      "left": 17
+    },
+    "spans": [
+      [
+        {
+          "text": "❯",
+          "color": "rgb(78, 154, 6)",
+          "opacity": "1"
+        },
+        {
+          "text": " echo",
+          "color": "rgb(224, 230, 217)",
+          "opacity": "1"
+        },
+        {
+          "text": " suggestion-demo",
+          "color": "rgb(85, 87, 83)",
+          "opacity": "1"
+        }
+      ],
+      [
+        {
+          "text": "Actual input: echo hello",
+          "color": "rgb(224, 230, 217)",
+          "opacity": "1"
+        }
+      ],
+      [
+        {
+          "text": "ANSI fg8: ",
+          "color": "rgb(224, 230, 217)",
+          "opacity": "1"
+        },
+        {
+          "text": "ghost suggestion",
+          "color": "rgb(85, 87, 83)",
+          "opacity": "1"
+        }
+      ],
+      [
+        {
+          "text": "ANSI fg240: ",
+          "color": "rgb(224, 230, 217)",
+          "opacity": "1"
+        },
+        {
+          "text": "explicit shell gray",
+          "color": "rgb(88, 88, 88)",
+          "opacity": "1"
+        }
+      ],
+      [
+        {
+          "text": "SGR dim: ",
+          "color": "rgb(224, 230, 217)",
+          "opacity": "1"
+        },
+        {
+          "text": "dim text",
+          "color": "rgba(224, 230, 217, 0.5)",
+          "opacity": "1"
+        }
+      ],
+      [
+        {
+          "text": "red ",
+          "color": "rgb(204, 0, 0)",
+          "opacity": "1"
+        },
+        {
+          "text": "green ",
+          "color": "rgb(78, 154, 6)",
+          "opacity": "1"
+        },
+        {
+          "text": "yellow ",
+          "color": "rgb(196, 160, 0)",
+          "opacity": "1"
+        },
+        {
+          "text": "blue ",
+          "color": "rgb(52, 101, 164)",
+          "opacity": "1"
+        },
+        {
+          "text": "magenta ",
+          "color": "rgb(117, 80, 123)",
+          "opacity": "1"
+        },
+        {
+          "text": "cyan",
+          "color": "rgb(6, 152, 154)",
+          "opacity": "1"
+        }
+      ],
+      [
+        {
+          "text": "Glyphs: Agjpqy _ | ❯ → ✓ café ",
+          "color": "rgb(224, 230, 217)",
+          "opacity": "1"
+        },
+        {
+          "text": "日本語",
+          "color": "rgb(224, 230, 217)",
+          "opacity": "1"
+        }
+      ]
+    ],
+    "lastResize": {
+      "action": "resize",
+      "cols": 43,
+      "rows": 36
+    }
+  },
+  {
+    "viewport": [
+      320,
+      640
+    ],
+    "cols": 34,
+    "rows": 23,
+    "theme": {
+      "background": "#20251f",
+      "foreground": "#e0e6d9"
+    },
+    "minimumContrastRatio": 1,
+    "font": "monospace",
+    "panel": "rgb(32, 47, 40)",
+    "host": {
+      "x": 17,
+      "y": 198.390625,
+      "width": 286,
+      "height": 355.21875,
+      "top": 198.390625,
+      "right": 303,
+      "bottom": 553.609375,
+      "left": 17
+    },
+    "screen": {
+      "x": 17,
+      "y": 198.390625,
+      "width": 266,
+      "height": 345,
+      "top": 198.390625,
+      "right": 283,
+      "bottom": 543.390625,
+      "left": 17
+    },
+    "spans": [
+      [
+        {
+          "text": "❯",
+          "color": "rgb(78, 154, 6)",
+          "opacity": "1"
+        },
+        {
+          "text": " echo",
+          "color": "rgb(224, 230, 217)",
+          "opacity": "1"
+        },
+        {
+          "text": " suggestion-demo",
+          "color": "rgb(85, 87, 83)",
+          "opacity": "1"
+        }
+      ],
+      [
+        {
+          "text": "Actual input: echo hello",
+          "color": "rgb(224, 230, 217)",
+          "opacity": "1"
+        }
+      ],
+      [
+        {
+          "text": "ANSI fg8: ",
+          "color": "rgb(224, 230, 217)",
+          "opacity": "1"
+        },
+        {
+          "text": "ghost suggestion",
+          "color": "rgb(85, 87, 83)",
+          "opacity": "1"
+        }
+      ],
+      [
+        {
+          "text": "ANSI fg240: ",
+          "color": "rgb(224, 230, 217)",
+          "opacity": "1"
+        },
+        {
+          "text": "explicit shell gray",
+          "color": "rgb(88, 88, 88)",
+          "opacity": "1"
+        }
+      ],
+      [
+        {
+          "text": "SGR dim: ",
+          "color": "rgb(224, 230, 217)",
+          "opacity": "1"
+        },
+        {
+          "text": "dim text",
+          "color": "rgba(224, 230, 217, 0.5)",
+          "opacity": "1"
+        }
+      ],
+      [
+        {
+          "text": "red ",
+          "color": "rgb(204, 0, 0)",
+          "opacity": "1"
+        },
+        {
+          "text": "green ",
+          "color": "rgb(78, 154, 6)",
+          "opacity": "1"
+        },
+        {
+          "text": "yellow ",
+          "color": "rgb(196, 160, 0)",
+          "opacity": "1"
+        },
+        {
+          "text": "blue ",
+          "color": "rgb(52, 101, 164)",
+          "opacity": "1"
+        },
+        {
+          "text": "magenta ",
+          "color": "rgb(117, 80, 123)",
+          "opacity": "1"
+        },
+        {
+          "text": "cyan",
+          "color": "rgb(6, 152, 154)",
+          "opacity": "1"
+        }
+      ],
+      [
+        {
+          "text": "Glyphs: Agjpqy _ | ❯ → ✓ café ",
+          "color": "rgb(224, 230, 217)",
+          "opacity": "1"
+        },
+        {
+          "text": "日本",
+          "color": "rgb(224, 230, 217)",
+          "opacity": "1"
+        }
+      ]
+    ],
+    "lastResize": {
+      "action": "resize",
+      "cols": 34,
+      "rows": 23
+    }
+  },
+  {
+    "inputs": [
+      "x",
+      ""
+    ],
+    "errors": []
+  }
+]
